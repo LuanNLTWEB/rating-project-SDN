@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -28,7 +28,7 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    const newUser = new User({ name, email, password, role });
+    const newUser = new User({ name, email, password });
     await newUser.save();
 
     res.status(201).json({

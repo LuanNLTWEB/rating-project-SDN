@@ -335,6 +335,143 @@ a:hover {
   color: #f6d8ba;
 }
 
+.admin-shell {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.admin-header h2 {
+  font-family: "Fraunces", serif;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.admin-subtitle {
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.admin-search {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-search input,
+.admin-search select {
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #d8c6b3;
+  background: #fffaf3;
+  min-width: 220px;
+}
+
+.admin-search select {
+  min-width: 140px;
+}
+
+.admin-card {
+  padding: 1.5rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid #eed7c2;
+  box-shadow: var(--shadow);
+}
+
+.admin-table {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.6fr 0.9fr 0.8fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid #ead6c3;
+}
+
+.admin-row:last-child {
+  border-bottom: none;
+}
+
+.admin-head {
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid #e0c7ad;
+}
+
+.admin-row select {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #d8c6b3;
+  background: #fffaf3;
+}
+
+.role-cell {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+.role-admin {
+  background: #f7d2cc;
+  color: #8f2a1f;
+}
+
+.role-staff {
+  background: #f5e3b8;
+  color: #8a5a13;
+}
+
+.role-customer {
+  background: #dbe8f4;
+  color: #2b4f73;
+}
+
+
+.admin-muted {
+  color: var(--muted);
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.ghost-button.danger {
+  border-color: #d2a59d;
+  color: var(--danger);
+}
+
+.ghost-button.danger:hover {
+  background: #f2d7d2;
+}
+
 @media (max-width: 720px) {
   .app-header {
     flex-direction: column;
@@ -348,5 +485,18 @@ a:hover {
   .user-meta {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .admin-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .admin-search {
+    width: 100%;
+  }
+
+  .admin-search input {
+    flex: 1;
   }
 }

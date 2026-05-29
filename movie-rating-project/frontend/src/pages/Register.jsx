@@ -19,7 +19,6 @@ const Register = () => {
         name,
         email,
         password,
-        role: "customer",
       });
       setMessage("Register successful");
       setName("");

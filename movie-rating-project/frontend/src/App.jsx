@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -64,35 +65,54 @@ const App = () => {
             )}
           </div>
         </div>
-        <nav className="nav-links nav-secondary">
-          <Link to="/">Home</Link>
-          <div className="nav-dropdown">
-            <button type="button" className="nav-link nav-trigger">
-              Anime
-            </button>
-            <div className="dropdown-menu" role="menu">
-              <button type="button" className="dropdown-item" role="menuitem">
-                Tìm kiếm Anime
+        {user?.role !== "admin" ? (
+          <nav className="nav-links nav-secondary">
+            <Link to="/">Home</Link>
+            <div className="nav-dropdown">
+              <button type="button" className="nav-link nav-trigger">
+                Anime
               </button>
-              <button type="button" className="dropdown-item" role="menuitem">
-                Anime theo mùa
-              </button>
-              <button type="button" className="dropdown-item" role="menuitem">
-                Anime hay nhất
-              </button>
-              <button type="button" className="dropdown-item" role="menuitem">
-                Những bộ Anime nên coi
-              </button>
+              <div className="dropdown-menu" role="menu">
+                <button type="button" className="dropdown-item" role="menuitem">
+                  Tìm kiếm Anime
+                </button>
+                <button type="button" className="dropdown-item" role="menuitem">
+                  Anime theo mùa
+                </button>
+                <button type="button" className="dropdown-item" role="menuitem">
+                  Anime hay nhất
+                </button>
+                <button type="button" className="dropdown-item" role="menuitem">
+                  Những bộ Anime nên coi
+                </button>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        ) : (
+          <nav className="nav-links nav-secondary">
+            <Link to="/admin/users">Admin</Link>
+          </nav>
+        )}
       </header>
 
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<Home status={status} />} />
-          <Route path="/login" element={<Login onLogin={setUser} />} />
-          <Route path="/register" element={<Register />} />
+          {user?.role === "admin" ? (
+            <>
+              <Route
+                path="/admin/users"
+                element={<AdminUsers currentUser={user} />}
+              />
+              <Route path="*" element={<Navigate to="/admin/users" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/" element={<Home status={status} />} />
+              <Route path="/login" element={<Login onLogin={setUser} />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          )}
         </Routes>
       </main>
     </div>
