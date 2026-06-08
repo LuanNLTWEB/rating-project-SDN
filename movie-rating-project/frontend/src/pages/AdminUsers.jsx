@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const roles = ["customer", "staff", "admin"];
@@ -42,13 +42,7 @@ const AdminUsers = ({ currentUser }) => {
           ...(roleFilter !== "all" ? { role: roleFilter } : {}),
         };
 
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/admin/users`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            params,
-          }
-        );
+        const response = await api.get("/admin/users", { params });
         setUsers(response.data.users || []);
         setTotalPages(response.data.pagination?.totalPages || 1);
       } catch (err) {
@@ -67,12 +61,7 @@ const AdminUsers = ({ currentUser }) => {
     setMessage("");
 
     try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/role`,
-        { role },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const response = await api.patch(`/admin/users/${userId}/role`, { role });
       setUsers((prev) =>
         prev.map((user) => (user._id === userId ? response.data.user : user))
       );
@@ -80,6 +69,37 @@ const AdminUsers = ({ currentUser }) => {
     } catch (err) {
       const apiMessage = err?.response?.data?.message;
       setError(apiMessage || "Failed to update role");
+    }
+  };
+
+  const handleStatusChange = async (userToUpdate, nextStatus) => {
+    if (!nextStatus) {
+      const shouldDeactivate = window.confirm(
+        `Deactivate ${userToUpdate.name} (${userToUpdate.email})?`
+      );
+
+      if (!shouldDeactivate) {
+        return;
+      }
+    }
+
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await api.patch(
+        `/admin/users/${userToUpdate._id}/status`,
+        { isActive: nextStatus }
+      );
+      setUsers((prev) =>
+        prev.map((user) =>
+          user._id === userToUpdate._id ? response.data.user : user
+        )
+      );
+      setMessage("Status updated");
+    } catch (err) {
+      const apiMessage = err?.response?.data?.message;
+      setError(apiMessage || "Failed to update status");
     }
   };
 
@@ -96,10 +116,7 @@ const AdminUsers = ({ currentUser }) => {
     setMessage("");
 
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/admin/users/${userToDelete._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.delete(`/admin/users/${userToDelete._id}`);
       setUsers((prev) => prev.filter((user) => user._id !== userToDelete._id));
       setMessage("User deleted");
     } catch (err) {
@@ -161,40 +178,61 @@ const AdminUsers = ({ currentUser }) => {
               <span>Name</span>
               <span>Email</span>
               <span>Role</span>
+              <span>Status</span>
               <span>Actions</span>
             </div>
-            {users.map((user) => (
-              <div className="admin-row" key={user._id}>
-                <span>{user.name}</span>
-                <span>{user.email}</span>
-                <span className="role-cell">
-                  <span className={`role-badge role-${user.role}`}>
-                    {user.role}
+            {users.map((user) => {
+              const isActive = user.isActive !== false;
+
+              return (
+                <div className="admin-row" key={user._id}>
+                  <span>{user.name}</span>
+                  <span>{user.email}</span>
+                  <span className="role-cell">
+                    <span className={`role-badge role-${user.role}`}>
+                      {user.role}
+                    </span>
+                    <select
+                      value={user.role}
+                      onChange={(event) =>
+                        handleRoleChange(user._id, event.target.value)
+                      }
+                    >
+                      {roles.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
                   </span>
-                  <select
-                    value={user.role}
-                    onChange={(event) =>
-                      handleRoleChange(user._id, event.target.value)
-                    }
-                  >
-                    {roles.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
-                </span>
-                <span>
-                  <button
-                    type="button"
-                    className="ghost-button danger"
-                    onClick={() => handleDelete(user)}
-                  >
-                    Delete
-                  </button>
-                </span>
-              </div>
-            ))}
+                  <span className="status-cell">
+                    <span
+                      className={`role-badge status-${
+                        isActive ? "active" : "inactive"
+                      }`}
+                    >
+                      {isActive ? "Active" : "Inactive"}
+                    </span>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      onClick={() => handleStatusChange(user, !isActive)}
+                    >
+                      {isActive ? "Deactivate" : "Activate"}
+                    </button>
+                  </span>
+                  <span>
+                    <button
+                      type="button"
+                      className="ghost-button danger"
+                      onClick={() => handleDelete(user)}
+                    >
+                      Delete
+                    </button>
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

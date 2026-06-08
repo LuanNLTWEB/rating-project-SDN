@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
+import rateSmarter from "../assets/lupa-wuwa-wuwa.gif";
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
@@ -15,11 +16,9 @@ const Login = ({ onLogin }) => {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/login`,
-        { email, password }
-      );
+      const response = await api.post("/login", { email, password });
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       if (onLogin) {
         onLogin(response.data.user);
@@ -67,14 +66,11 @@ const Login = ({ onLogin }) => {
         </p>
       </div>
       <aside className="auth-aside">
-        <div>
-          <h3>Rate smarter.</h3>
-          <p>
-            Track your watchlist, share reviews, and explore the community's
-            top picks.
-          </p>
-        </div>
-        <p>Access your dashboard the moment you log in.</p>
+        <img 
+          src={rateSmarter} 
+          alt="Rate smarter dashboard" 
+          style={{ width: "65%", borderRadius: "8px", mixBlendMode: "lighten", display: "block", margin: "0 auto", objectFit: "cover" }}
+        />
       </aside>
     </section>
   );

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const AdminAuditLog = require("../models/AdminAuditLog");
 
 const allowedRoles = ["customer", "staff", "admin"];
 
@@ -24,7 +25,7 @@ const listUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([
       User.find(filter)
-        .select("name email role createdAt updatedAt")
+        .select("name email role isActive createdAt updatedAt")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
@@ -48,7 +49,7 @@ const listUsers = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select(
-      "name email role createdAt updatedAt"
+      "name email role isActive createdAt updatedAt"
     );
 
     if (!user) {
@@ -78,16 +79,73 @@ const updateUserRole = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const previousRole = user.role;
+
     user.role = role;
     await user.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: "role_update",
+      targetUserId: user._id,
+      targetEmail: user.email,
+      details: { previousRole, newRole: role },
+    });
 
     return res.status(200).json({
       message: "Role updated",
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        isActive: user.isActive,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const updateUserStatus = async (req, res) => {
+  try {
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    if (req.user.id === req.params.id && !isActive) {
+      return res.status(400).json({ message: "Cannot deactivate your account" });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const previousStatus = user.isActive;
+    user.isActive = isActive;
+    await user.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: "status_update",
+      targetUserId: user._id,
+      targetEmail: user.email,
+      details: { previousStatus, newStatus: isActive },
+    });
+
+    return res.status(200).json({
+      message: "Status updated",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
       },
     });
   } catch (error) {
@@ -106,10 +164,25 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: "delete_user",
+      targetUserId: user._id,
+      targetEmail: user.email,
+      details: { role: user.role, wasActive: user.isActive },
+    });
+
     return res.status(200).json({ message: "User deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-module.exports = { listUsers, getUserById, updateUserRole, deleteUser };
+module.exports = {
+  listUsers,
+  getUserById,
+  updateUserRole,
+  updateUserStatus,
+  deleteUser,
+};

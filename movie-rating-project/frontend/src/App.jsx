@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api, clearSession } from "./services/api";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
+import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -14,9 +15,7 @@ const App = () => {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/status`
-        );
+        const response = await api.get("/status");
         setStatus(`Connected: ${response.data.message}`);
       } catch (error) {
         setStatus("Failed to connect to backend");
@@ -34,8 +33,11 @@ const App = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      api.post("/logout", { refreshToken }).catch(() => null);
+    }
+    clearSession();
     setUser(null);
     navigate("/login");
   };
@@ -91,6 +93,7 @@ const App = () => {
         ) : (
           <nav className="nav-links nav-secondary">
             <Link to="/admin/users">Admin</Link>
+            <Link to="/admin/audit">Audit Logs</Link>
           </nav>
         )}
       </header>
@@ -102,6 +105,10 @@ const App = () => {
               <Route
                 path="/admin/users"
                 element={<AdminUsers currentUser={user} />}
+              />
+              <Route
+                path="/admin/audit"
+                element={<AdminAuditLogs currentUser={user} />}
               />
               <Route path="*" element={<Navigate to="/admin/users" replace />} />
             </>

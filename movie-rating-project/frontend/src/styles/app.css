@@ -392,9 +392,23 @@ a:hover {
   gap: 0.75rem;
 }
 
+.audit-table {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .admin-row {
   display: grid;
-  grid-template-columns: 1.2fr 1.6fr 0.9fr 0.8fr;
+  grid-template-columns: 1.2fr 1.6fr 1fr 1fr 0.9fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid #ead6c3;
+}
+
+.audit-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr 0.9fr 1.3fr 1.4fr;
   gap: 1rem;
   align-items: center;
   padding: 0.6rem 0.2rem;
@@ -405,7 +419,17 @@ a:hover {
   border-bottom: none;
 }
 
+.audit-row:last-child {
+  border-bottom: none;
+}
+
 .admin-head {
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid #e0c7ad;
+}
+
+.audit-head {
   font-weight: 700;
   color: var(--muted);
   border-bottom: 1px solid #e0c7ad;
@@ -420,6 +444,11 @@ a:hover {
 }
 
 .role-cell {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.status-cell {
   display: grid;
   gap: 0.5rem;
 }
@@ -451,9 +480,25 @@ a:hover {
   color: #2b4f73;
 }
 
+.status-active {
+  background: #d8f0dc;
+  color: #1f7a4a;
+}
+
+.status-inactive {
+  background: #f7d2cc;
+  color: #8f2a1f;
+}
+
 
 .admin-muted {
   color: var(--muted);
+}
+
+.audit-details {
+  color: var(--muted);
+  font-size: 0.9rem;
+  word-break: break-word;
 }
 
 .admin-pagination {
@@ -488,6 +533,11 @@ a:hover {
   }
 
   .admin-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .audit-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
