@@ -27,7 +27,7 @@ const AdminGenres = ({ currentUser }) => {
   );
 
   useEffect(() => {
-    if (!currentUser || currentUser.role !== "admin") {
+    if (!currentUser || (currentUser.role !== "staff" && currentUser.role !== "admin")) {
       navigate("/");
     }
   }, [currentUser, navigate]);
@@ -47,7 +47,7 @@ const AdminGenres = ({ currentUser }) => {
           ...(statusFilter !== "all" ? { status: statusFilter } : {}),
         };
 
-        const response = await axios.get(`${baseURL}/admin/genres`, {
+        const response = await axios.get(`${baseURL}/staff/genres`, {
           headers,
           params,
         });
@@ -96,7 +96,7 @@ const AdminGenres = ({ currentUser }) => {
     try {
       if (editingGenre) {
         const response = await axios.put(
-          `${baseURL}/admin/genres/${editingGenre._id}`,
+          `${baseURL}/staff/genres/${editingGenre._id}`,
           { name: formName.trim(), description: formDescription.trim() },
           { headers }
         );
@@ -106,7 +106,7 @@ const AdminGenres = ({ currentUser }) => {
         setMessage("Genre updated");
       } else {
         const response = await axios.post(
-          `${baseURL}/admin/genres`,
+          `${baseURL}/staff/genres`,
           { name: formName.trim(), description: formDescription.trim() },
           { headers }
         );
@@ -126,7 +126,7 @@ const AdminGenres = ({ currentUser }) => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}/admin/genres/${genre._id}/toggle-status`,
+        `${baseURL}/staff/genres/${genre._id}/toggle-status`,
         {},
         { headers }
       );
@@ -151,7 +151,7 @@ const AdminGenres = ({ currentUser }) => {
     setMessage("");
 
     try {
-      await axios.delete(`${baseURL}/admin/genres/${genre._id}`, { headers });
+      await axios.delete(`${baseURL}/staff/genres/${genre._id}`, { headers });
       setGenres((prev) => prev.filter((g) => g._id !== genre._id));
       setMessage("Genre deleted");
     } catch (err) {

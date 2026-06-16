@@ -34,4 +34,12 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-module.exports = { authenticate, requireAdmin };
+const requireStaff = (req, res, next) => {
+  if (!req.user || (req.user.role !== "staff" && req.user.role !== "admin")) {
+    return res.status(403).json({ message: "Staff access required" });
+  }
+
+  return next();
+};
+
+module.exports = { authenticate, requireAdmin, requireStaff };

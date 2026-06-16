@@ -14,7 +14,9 @@ const listGenres = async (req, res) => {
       filter.name = { $regex: search, $options: "i" };
     }
 
-    if (status === "active") {
+    if (!req.user) {
+      filter.isActive = true;
+    } else if (status === "active") {
       filter.isActive = true;
     } else if (status === "inactive") {
       filter.isActive = false;

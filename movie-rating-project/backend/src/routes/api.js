@@ -15,7 +15,7 @@ const {
 	toggleGenreStatus,
 	deleteGenre,
 } = require("../controllers/genreController");
-const { authenticate, requireAdmin } = require("../middlewares/auth");
+const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -32,12 +32,13 @@ router.patch(
 );
 router.delete("/admin/users/:id", authenticate, requireAdmin, deleteUser);
 
-router.get("/admin/genres", authenticate, requireAdmin, listGenres);
-router.get("/admin/genres/:id", authenticate, requireAdmin, getGenreById);
-router.post("/admin/genres", authenticate, requireAdmin, createGenre);
-router.put("/admin/genres/:id", authenticate, requireAdmin, updateGenre);
-router.patch("/admin/genres/:id/toggle-status", authenticate, requireAdmin, toggleGenreStatus);
-router.delete("/admin/genres/:id", authenticate, requireAdmin, deleteGenre);
+router.get("/genres", listGenres);
+router.get("/staff/genres", authenticate, requireStaff, listGenres);
+router.get("/staff/genres/:id", authenticate, requireStaff, getGenreById);
+router.post("/staff/genres", authenticate, requireStaff, createGenre);
+router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
+router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
+router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
 
 router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
 
