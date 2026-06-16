@@ -1,0 +1,69 @@
+[{
+  "_id": {
+    "$oid": "6a26159b425d096ddef385ec"
+  },
+  "name": "Admin",
+  "email": "admin1234@gmail.com",
+  "password": "$2a$10$t8bqlYMxdZaRCCZUoF.4ku05KSMdeapnNoa3RrctmPpBMloiuxfci",
+  "gender": "male",
+  "dateOfBirth": {
+    "$date": "2010-02-12T00:00:00.000Z"
+  },
+  "role": "admin",
+  "isActive": true,
+  "refreshTokenHash": null,
+  "refreshTokenExpiresAt": null,
+  "createdAt": {
+    "$date": "2026-06-08T01:06:35.294Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-08T01:09:22.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a2615b8425d096ddef385ef"
+  },
+  "name": "Staff",
+  "email": "staff1234@gmail.com",
+  "password": "$2a$10$WwJiRlrVZcpdcs6d4JQsQey7iNRznWlGJlVLJkUCywC3rtdBA3Qju",
+  "gender": "male",
+  "dateOfBirth": {
+    "$date": "2008-02-07T00:00:00.000Z"
+  },
+  "role": "staff",
+  "isActive": true,
+  "refreshTokenHash": null,
+  "refreshTokenExpiresAt": null,
+  "createdAt": {
+    "$date": "2026-06-08T01:07:04.239Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-08T01:07:04.239Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a2615e0425d096ddef385f2"
+  },
+  "name": "customer1",
+  "email": "customer1234@gmail.com",
+  "password": "$2a$10$8ArtuY432pKRjnH2i80PhezY1hS9PM7DnZOgOAjHfyIPVMiwhB5am",
+  "gender": "female",
+  "dateOfBirth": {
+    "$date": "2008-06-05T00:00:00.000Z"
+  },
+  "role": "customer",
+  "isActive": true,
+  "refreshTokenHash": null,
+  "refreshTokenExpiresAt": null,
+  "createdAt": {
+    "$date": "2026-06-08T01:07:44.469Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-08T01:29:26.553Z"
+  },
+  "__v": 0
+}]
