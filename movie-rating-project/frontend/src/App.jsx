@@ -5,11 +5,8 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
-<<<<<<< Updated upstream
-=======
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 import AdminGenres from "./pages/AdminGenres.jsx";
->>>>>>> Stashed changes
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -95,13 +92,9 @@ const App = () => {
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
-<<<<<<< Updated upstream
-            <Link to="/admin/users">Admin</Link>
-=======
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/genres">Genres</Link>
             <Link to="/admin/audit">Audit Logs</Link>
->>>>>>> Stashed changes
           </nav>
         )}
       </header>
@@ -114,8 +107,6 @@ const App = () => {
                 path="/admin/users"
                 element={<AdminUsers currentUser={user} />}
               />
-<<<<<<< Updated upstream
-=======
               <Route
                 path="/admin/genres"
                 element={<AdminGenres currentUser={user} />}
@@ -124,7 +115,6 @@ const App = () => {
                 path="/admin/audit"
                 element={<AdminAuditLogs currentUser={user} />}
               />
->>>>>>> Stashed changes
               <Route path="*" element={<Navigate to="/admin/users" replace />} />
             </>
           ) : (

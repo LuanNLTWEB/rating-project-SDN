@@ -6,8 +6,6 @@ const {
 	updateUserRole,
 	deleteUser,
 } = require("../controllers/adminUserController");
-<<<<<<< Updated upstream
-=======
 const { listAuditLogs } = require("../controllers/adminAuditController");
 const {
 	listGenres,
@@ -17,7 +15,6 @@ const {
 	toggleGenreStatus,
 	deleteGenre,
 } = require("../controllers/genreController");
->>>>>>> Stashed changes
 const { authenticate, requireAdmin } = require("../middlewares/auth");
 
 const router = express.Router();
@@ -41,5 +38,7 @@ router.post("/admin/genres", authenticate, requireAdmin, createGenre);
 router.put("/admin/genres/:id", authenticate, requireAdmin, updateGenre);
 router.patch("/admin/genres/:id/toggle-status", authenticate, requireAdmin, toggleGenreStatus);
 router.delete("/admin/genres/:id", authenticate, requireAdmin, deleteGenre);
+
+router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import axios from "axios";
 
 const AdminGenres = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -20,6 +20,11 @@ const AdminGenres = ({ currentUser }) => {
   const [formDescription, setFormDescription] = useState("");
 
   const token = useMemo(() => localStorage.getItem("token"), []);
+  const baseURL = import.meta.env.VITE_API_URL;
+  const headers = useMemo(
+    () => ({ Authorization: `Bearer ${token}` }),
+    [token]
+  );
 
   useEffect(() => {
     if (!currentUser || currentUser.role !== "admin") {
@@ -42,7 +47,10 @@ const AdminGenres = ({ currentUser }) => {
           ...(statusFilter !== "all" ? { status: statusFilter } : {}),
         };
 
-        const response = await api.get("/admin/genres", { params });
+        const response = await axios.get(`${baseURL}/admin/genres`, {
+          headers,
+          params,
+        });
         setGenres(response.data.genres || []);
         setTotalPages(response.data.pagination?.totalPages || 1);
       } catch (err) {
@@ -54,7 +62,7 @@ const AdminGenres = ({ currentUser }) => {
     };
 
     fetchGenres();
-  }, [page, limit, search, statusFilter, token]);
+  }, [page, limit, search, statusFilter, token, baseURL, headers]);
 
   const resetForm = () => {
     setShowForm(false);
@@ -87,19 +95,21 @@ const AdminGenres = ({ currentUser }) => {
 
     try {
       if (editingGenre) {
-        const response = await api.put(`/admin/genres/${editingGenre._id}`, {
-          name: formName.trim(),
-          description: formDescription.trim(),
-        });
+        const response = await axios.put(
+          `${baseURL}/admin/genres/${editingGenre._id}`,
+          { name: formName.trim(), description: formDescription.trim() },
+          { headers }
+        );
         setGenres((prev) =>
           prev.map((g) => (g._id === editingGenre._id ? response.data.genre : g))
         );
         setMessage("Genre updated");
       } else {
-        const response = await api.post("/admin/genres", {
-          name: formName.trim(),
-          description: formDescription.trim(),
-        });
+        const response = await axios.post(
+          `${baseURL}/admin/genres`,
+          { name: formName.trim(), description: formDescription.trim() },
+          { headers }
+        );
         setGenres((prev) => [response.data.genre, ...prev]);
         setMessage("Genre created");
       }
@@ -115,7 +125,11 @@ const AdminGenres = ({ currentUser }) => {
     setMessage("");
 
     try {
-      const response = await api.patch(`/admin/genres/${genre._id}/toggle-status`);
+      const response = await axios.patch(
+        `${baseURL}/admin/genres/${genre._id}/toggle-status`,
+        {},
+        { headers }
+      );
       setGenres((prev) =>
         prev.map((g) => (g._id === genre._id ? response.data.genre : g))
       );
@@ -137,7 +151,7 @@ const AdminGenres = ({ currentUser }) => {
     setMessage("");
 
     try {
-      await api.delete(`/admin/genres/${genre._id}`);
+      await axios.delete(`${baseURL}/admin/genres/${genre._id}`, { headers });
       setGenres((prev) => prev.filter((g) => g._id !== genre._id));
       setMessage("Genre deleted");
     } catch (err) {
