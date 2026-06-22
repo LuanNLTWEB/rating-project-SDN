@@ -92,6 +92,7 @@ const createGenre = async (req, res) => {
         description: genre.description,
         slug: genre.slug,
         isActive: genre.isActive,
+        createdAt: genre.createdAt,
       },
     });
   } catch (error) {
