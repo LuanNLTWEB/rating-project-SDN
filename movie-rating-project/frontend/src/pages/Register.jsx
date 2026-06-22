@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../services/api";
 import { Link } from "react-router-dom";
+import rateSmarter from "../assets/anime.gif";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [gender, setGender] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -15,15 +19,21 @@ const Register = () => {
     setError("");
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
+      await api.post("/register", {
         name,
         email,
         password,
+        passwordConfirm,
+        gender,
+        dateOfBirth,
       });
       setMessage("Register successful");
       setName("");
       setEmail("");
       setPassword("");
+      setPasswordConfirm("");
+      setGender("");
+      setDateOfBirth("");
     } catch (err) {
       const apiMessage = err?.response?.data?.message;
       setError(apiMessage || "Register failed");
@@ -63,6 +73,37 @@ const Register = () => {
               required
             />
           </div>
+          <div className="field">
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              required
+            />
+          </div>
+          <div className="field">
+            <label>Gender</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Date of Birth</label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              required
+            />
+          </div>
           <button type="submit" className="primary-button">
             Register
           </button>
@@ -74,14 +115,11 @@ const Register = () => {
         </p>
       </div>
       <aside className="auth-aside">
-        <div>
-          <h3>Build your profile.</h3>
-          <p>
-            Save your favorites, keep track of ratings, and unlock curated
-            recommendations.
-          </p>
-        </div>
-        <p>Your reviews shape the community.</p>
+        <img 
+          src={rateSmarter} 
+          alt="Build your profile" 
+          style={{ width: "80%", borderRadius: "8px", mixBlendMode: "lighten" }}
+        />
       </aside>
     </section>
   );

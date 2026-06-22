@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api, clearSession } from "./services/api";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -16,9 +16,7 @@ const App = () => {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/status`
-        );
+        const response = await api.get("/status");
         setStatus(`Connected: ${response.data.message}`);
       } catch (error) {
         setStatus("Failed to connect to backend");
@@ -36,8 +34,11 @@ const App = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      api.post("/logout", { refreshToken }).catch(() => null);
+    }
+    clearSession();
     setUser(null);
     navigate("/login");
   };

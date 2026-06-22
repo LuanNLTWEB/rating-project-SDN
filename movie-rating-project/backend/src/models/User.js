@@ -21,10 +21,31 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true,
+    },
     role: {
       type: String,
       enum: ["customer", "staff", "admin"],
       default: "customer",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    refreshTokenHash: {
+      type: String,
+      default: null,
+    },
+    refreshTokenExpiresAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
