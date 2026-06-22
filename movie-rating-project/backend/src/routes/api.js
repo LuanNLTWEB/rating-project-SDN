@@ -8,7 +8,15 @@ const {
 	deleteUser,
 } = require("../controllers/adminUserController");
 const { listAuditLogs } = require("../controllers/adminAuditController");
-const { authenticate, requireAdmin } = require("../middlewares/auth");
+const {
+	listGenres,
+	getGenreById,
+	createGenre,
+	updateGenre,
+	toggleGenreStatus,
+	deleteGenre,
+} = require("../controllers/genreController");
+const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -33,5 +41,15 @@ router.patch(
 	updateUserStatus
 );
 router.delete("/admin/users/:id", authenticate, requireAdmin, deleteUser);
+
+router.get("/genres", listGenres);
+router.get("/staff/genres", authenticate, requireStaff, listGenres);
+router.get("/staff/genres/:id", authenticate, requireStaff, getGenreById);
+router.post("/staff/genres", authenticate, requireStaff, createGenre);
+router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
+router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
+router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
+
+router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
 
 module.exports = router;

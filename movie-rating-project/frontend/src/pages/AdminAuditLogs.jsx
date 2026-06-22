@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import axios from "axios";
 
 const AdminAuditLogs = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -16,6 +16,11 @@ const AdminAuditLogs = ({ currentUser }) => {
   const [error, setError] = useState("");
 
   const token = useMemo(() => localStorage.getItem("token"), []);
+  const baseURL = import.meta.env.VITE_API_URL;
+  const headers = useMemo(
+    () => ({ Authorization: `Bearer ${token}` }),
+    [token]
+  );
 
   useEffect(() => {
     if (!currentUser || currentUser.role !== "admin") {
@@ -42,7 +47,10 @@ const AdminAuditLogs = ({ currentUser }) => {
           ...(fromDate ? { from: fromDate } : {}),
         };
 
-        const response = await api.get("/admin/audit-logs", { params });
+        const response = await axios.get(`${baseURL}/admin/audit-logs`, {
+          headers,
+          params,
+        });
         setLogs(response.data.logs || []);
         setTotalPages(response.data.pagination?.totalPages || 1);
       } catch (err) {
@@ -54,7 +62,7 @@ const AdminAuditLogs = ({ currentUser }) => {
     };
 
     fetchLogs();
-  }, [page, limit, admin, target, fromDate, token]);
+  }, [page, limit, admin, target, fromDate, token, baseURL, headers]);
 
   const handleFilterSubmit = (event) => {
     event.preventDefault();

@@ -415,6 +415,15 @@ a:hover {
   border-bottom: 1px solid #ead6c3;
 }
 
+.audit-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr 0.9fr 1.3fr 1.4fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid #ead6c3;
+}
+
 .admin-row:last-child {
   border-bottom: none;
 }
@@ -433,6 +442,12 @@ a:hover {
   font-weight: 700;
   color: var(--muted);
   border-bottom: 1px solid #e0c7ad;
+}
+
+.audit-details {
+  color: var(--muted);
+  font-size: 0.9rem;
+  word-break: break-word;
 }
 
 .admin-row select {
@@ -532,7 +547,8 @@ a:hover {
     justify-content: space-between;
   }
 
-  .admin-row {
+  .admin-row,
+  .audit-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }

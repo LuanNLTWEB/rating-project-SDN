@@ -6,6 +6,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
+import AdminGenres from "./pages/AdminGenres.jsx";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -67,33 +68,20 @@ const App = () => {
             )}
           </div>
         </div>
-        {user?.role !== "admin" ? (
+        {user?.role === "admin" ? (
+          <nav className="nav-links nav-secondary">
+            <Link to="/admin/users">Users</Link>
+            <Link to="/admin/genres">Genres</Link>
+            <Link to="/admin/audit">Audit Logs</Link>
+          </nav>
+        ) : user?.role === "staff" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
-            <div className="nav-dropdown">
-              <button type="button" className="nav-link nav-trigger">
-                Anime
-              </button>
-              <div className="dropdown-menu" role="menu">
-                <button type="button" className="dropdown-item" role="menuitem">
-                  Tìm kiếm Anime
-                </button>
-                <button type="button" className="dropdown-item" role="menuitem">
-                  Anime theo mùa
-                </button>
-                <button type="button" className="dropdown-item" role="menuitem">
-                  Anime hay nhất
-                </button>
-                <button type="button" className="dropdown-item" role="menuitem">
-                  Những bộ Anime nên coi
-                </button>
-              </div>
-            </div>
+            <Link to="/staff/genres">Genres</Link>
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
-            <Link to="/admin/users">Admin</Link>
-            <Link to="/admin/audit">Audit Logs</Link>
+            <Link to="/">Home</Link>
           </nav>
         )}
       </header>
@@ -107,10 +95,23 @@ const App = () => {
                 element={<AdminUsers currentUser={user} />}
               />
               <Route
+                path="/admin/genres"
+                element={<AdminGenres currentUser={user} />}
+              />
+              <Route
                 path="/admin/audit"
                 element={<AdminAuditLogs currentUser={user} />}
               />
               <Route path="*" element={<Navigate to="/admin/users" replace />} />
+            </>
+          ) : user?.role === "staff" ? (
+            <>
+              <Route path="/" element={<Home status={status} currentUser={user} />} />
+              <Route
+                path="/staff/genres"
+                element={<AdminGenres currentUser={user} />}
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
