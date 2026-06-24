@@ -39,7 +39,7 @@ const requireAdmin = (req, res, next) => {
 };
 
 const requireStaff = (req, res, next) => {
-  if (!req.user || (req.user.role !== "staff" && req.user.role !== "admin")) {
+  if (!req.user || req.user.role !== "staff") {
     return res.status(403).json({ message: "Staff access required" });
   }
 

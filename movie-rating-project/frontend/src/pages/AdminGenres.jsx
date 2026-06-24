@@ -27,7 +27,7 @@ const AdminGenres = ({ currentUser }) => {
   );
 
   useEffect(() => {
-    if (!currentUser || (currentUser.role !== "staff" && currentUser.role !== "admin")) {
+    if (!currentUser || currentUser.role !== "staff") {
       navigate("/");
     }
   }, [currentUser, navigate]);

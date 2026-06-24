@@ -71,7 +71,6 @@ const App = () => {
         {user?.role === "admin" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/admin/users">Users</Link>
-            <Link to="/admin/genres">Genres</Link>
             <Link to="/admin/audit">Audit Logs</Link>
           </nav>
         ) : user?.role === "staff" ? (
