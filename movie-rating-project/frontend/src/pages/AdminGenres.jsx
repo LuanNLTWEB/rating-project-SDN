@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import CustomSelect from "../components/CustomSelect.jsx";
 
 const AdminGenres = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -14,11 +15,6 @@ const AdminGenres = ({ currentUser }) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingGenre, setEditingGenre] = useState(null);
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-
   const token = useMemo(() => localStorage.getItem("token"), []);
   const baseURL = import.meta.env.VITE_API_URL;
   const headers = useMemo(
@@ -26,8 +22,11 @@ const AdminGenres = ({ currentUser }) => {
     [token]
   );
 
+  const listPath = currentUser?.role === "admin" ? "/admin/genres" : "/staff/genres";
+  const apiPrefix = currentUser?.role === "admin" ? "admin" : "staff";
+
   useEffect(() => {
-    if (!currentUser || currentUser.role !== "staff") {
+    if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "staff")) {
       navigate("/");
     }
   }, [currentUser, navigate]);
@@ -47,7 +46,7 @@ const AdminGenres = ({ currentUser }) => {
           ...(statusFilter !== "all" ? { status: statusFilter } : {}),
         };
 
-        const response = await axios.get(`${baseURL}/staff/genres`, {
+        const response = await axios.get(`${baseURL}/${apiPrefix}/genres`, {
           headers,
           params,
         });
@@ -62,63 +61,7 @@ const AdminGenres = ({ currentUser }) => {
     };
 
     fetchGenres();
-  }, [page, limit, search, statusFilter, token, baseURL, headers]);
-
-  const resetForm = () => {
-    setShowForm(false);
-    setEditingGenre(null);
-    setFormName("");
-    setFormDescription("");
-  };
-
-  const openCreateForm = () => {
-    resetForm();
-    setShowForm(true);
-  };
-
-  const openEditForm = (genre) => {
-    setEditingGenre(genre);
-    setFormName(genre.name);
-    setFormDescription(genre.description || "");
-    setShowForm(true);
-  };
-
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
-    setMessage("");
-
-    if (!formName.trim()) {
-      setError("Genre name is required");
-      return;
-    }
-
-    try {
-      if (editingGenre) {
-        const response = await axios.put(
-          `${baseURL}/staff/genres/${editingGenre._id}`,
-          { name: formName.trim(), description: formDescription.trim() },
-          { headers }
-        );
-        setGenres((prev) =>
-          prev.map((g) => (g._id === editingGenre._id ? response.data.genre : g))
-        );
-        setMessage("Genre updated");
-      } else {
-        const response = await axios.post(
-          `${baseURL}/staff/genres`,
-          { name: formName.trim(), description: formDescription.trim() },
-          { headers }
-        );
-        setGenres((prev) => [response.data.genre, ...prev]);
-        setMessage("Genre created");
-      }
-      resetForm();
-    } catch (err) {
-      const apiMessage = err?.response?.data?.message;
-      setError(apiMessage || "Failed to save genre");
-    }
-  };
+  }, [page, limit, search, statusFilter, token, baseURL, headers, apiPrefix]);
 
   const handleToggleStatus = async (genre) => {
     setError("");
@@ -126,7 +69,7 @@ const AdminGenres = ({ currentUser }) => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}/staff/genres/${genre._id}/toggle-status`,
+        `${baseURL}/${apiPrefix}/genres/${genre._id}/toggle-status`,
         {},
         { headers }
       );
@@ -151,7 +94,7 @@ const AdminGenres = ({ currentUser }) => {
     setMessage("");
 
     try {
-      await axios.delete(`${baseURL}/staff/genres/${genre._id}`, { headers });
+      await axios.delete(`${baseURL}/${apiPrefix}/genres/${genre._id}`, { headers });
       setGenres((prev) => prev.filter((g) => g._id !== genre._id));
       setMessage("Genre deleted");
     } catch (err) {
@@ -180,20 +123,26 @@ const AdminGenres = ({ currentUser }) => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-            <select
+            <CustomSelect
               value={statusFilter}
-              onChange={(event) => {
-                setStatusFilter(event.target.value);
+              onChange={(val) => {
+                setStatusFilter(val);
                 setPage(1);
               }}
-            >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+              options={[
+                { value: "all", label: "All" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" }
+              ]}
+              placeholder="All"
+            />
             <button type="submit" className="ghost-button">Search</button>
           </form>
-          <button type="button" className="primary-button" onClick={openCreateForm}>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => navigate(`${listPath}/create`)}
+          >
             + New Genre
           </button>
         </div>
@@ -201,50 +150,6 @@ const AdminGenres = ({ currentUser }) => {
 
       {message && <p className="status-success">{message}</p>}
       {error && <p className="status-error">{error}</p>}
-
-      {showForm && (
-        <div className="admin-card">
-          <h3>{editingGenre ? "Edit Genre" : "New Genre"}</h3>
-          <form className="form-grid" onSubmit={handleFormSubmit}>
-            <div className="field">
-              <label>Name</label>
-              <input
-                type="text"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                placeholder="e.g. Action, Comedy, Drama"
-                required
-              />
-            </div>
-            <div className="field">
-              <label>Description</label>
-              <textarea
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Brief description of this genre"
-                rows={3}
-                style={{
-                  padding: "0.7rem 0.9rem",
-                  borderRadius: "12px",
-                  border: "1px solid #d8c6b3",
-                  fontSize: "1rem",
-                  background: "#fffaf3",
-                  fontFamily: "inherit",
-                  resize: "vertical",
-                }}
-              />
-            </div>
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              <button type="submit" className="primary-button">
-                {editingGenre ? "Update" : "Create"}
-              </button>
-              <button type="button" className="ghost-button" onClick={resetForm}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       <div className="admin-card">
         {loading ? (
@@ -280,7 +185,7 @@ const AdminGenres = ({ currentUser }) => {
                   <button
                     type="button"
                     className="ghost-button"
-                    onClick={() => openEditForm(genre)}
+                    onClick={() => navigate(`${listPath}/edit/${genre._id}`)}
                   >
                     Edit
                   </button>
