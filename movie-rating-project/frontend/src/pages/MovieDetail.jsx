@@ -245,7 +245,7 @@ const MovieDetail = () => {
                   <Link key={rn._id} to={`/news/${rn._id || rn}`} style={{ textDecoration: "none", color: "inherit", display: "flex", gap: "16px", padding: "10px", borderRadius: "8px", border: "1px solid #ead6c3", background: "#fffaf3", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = '#f5e4d3'} onMouseLeave={e => e.currentTarget.style.background = '#fffaf3'}>
                     <div style={{ width: "80px", height: "60px", borderRadius: "6px", overflow: "hidden", flexShrink: 0, backgroundColor: "#eee" }}>
                       {rn.imageUrls && rn.imageUrls.length > 0 ? (
-                        <img src={`${baseURL.replace('/api', '')}${rn.imageUrls[0]}`} alt={rn.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <img src={rn.imageUrls[0].startsWith('http') ? rn.imageUrls[0] : `${baseURL.replace('/api', '')}${rn.imageUrls[0]}`} alt={rn.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.7rem" }}>No Image</div>
                       )}
