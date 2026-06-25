@@ -603,3 +603,43 @@ a:hover {
   display: none; /* Chrome, Safari and Opera */
 }
 
+/* Typography and Rich Text formatting for News */
+.news-content-body {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.news-content-body p {
+  margin-bottom: 1.2em;
+}
+.news-content-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.news-content-body h1, .news-content-body h2, .news-content-body h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  color: var(--ink);
+}
+.news-content-body a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Clearfix for floating elements inside the content body */
+.news-content-body::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Mobile responsive handling for floating images */
+@media (max-width: 768px) {
+  .news-content-body img[style*="float: left"],
+  .news-content-body img[style*="float: right"] {
+    float: none !important;
+    display: block !important;
+    margin: 1rem auto !important;
+    width: 100% !important; /* Forces image to be full width on mobile instead of floating */
+  }
+}

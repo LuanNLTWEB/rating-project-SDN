@@ -7,6 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/datepicker.css";
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { Camera as CameraIcon, Image as ImageIcon } from "lucide-react";
 
 const StaffMovieForm = ({ currentUser }) => {
   const { id } = useParams();
@@ -15,6 +16,10 @@ const StaffMovieForm = ({ currentUser }) => {
 
   const [genres, setGenres] = useState([]);
   const [genreSearch, setGenreSearch] = useState("");
+  const [allMovies, setAllMovies] = useState([]);
+  const [movieSearch, setMovieSearch] = useState("");
+  const [allNews, setAllNews] = useState([]);
+  const [newsSearch, setNewsSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [globalError, setGlobalError] = useState("");
@@ -29,10 +34,23 @@ const StaffMovieForm = ({ currentUser }) => {
     status: "ongoing",
     isActive: true,
     genres: [],
+    authors: [],
+    type: "tv series",
+    producers: [],
+    studios: [],
+    trailers: [],
+    relatedMovies: [],
+    relatedNews: [],
   });
   
   // Validation State
   const [errors, setErrors] = useState({});
+
+  // Local text states for array inputs
+  const [authorsText, setAuthorsText] = useState("");
+  const [producersText, setProducersText] = useState("");
+  const [studiosText, setStudiosText] = useState("");
+  const [trailersText, setTrailersText] = useState("");
 
   // Image Upload & Crop State
   const [cropModal, setCropModal] = useState({ show: false, type: null, src: null });
@@ -56,6 +74,8 @@ const StaffMovieForm = ({ currentUser }) => {
 
   useEffect(() => {
     fetchGenres();
+    fetchAllMovies();
+    fetchAllNews();
     if (isEditMode) {
       fetchMovieDetails();
     }
@@ -75,7 +95,18 @@ const StaffMovieForm = ({ currentUser }) => {
         status: movie.status,
         isActive: movie.isActive,
         genres: movie.genres.map(g => g._id),
+        authors: movie.authors || [],
+        type: movie.type || "tv series",
+        producers: movie.producers || [],
+        studios: movie.studios || [],
+        trailers: movie.trailers || [],
+        relatedMovies: movie.relatedMovies ? movie.relatedMovies.map(m => m._id || m) : [],
+        relatedNews: movie.relatedNews ? movie.relatedNews.map(n => n._id || n) : [],
       });
+      setAuthorsText(movie.authors ? movie.authors.join(", ") : "");
+      setProducersText(movie.producers ? movie.producers.join(", ") : "");
+      setStudiosText(movie.studios ? movie.studios.join(", ") : "");
+      setTrailersText(movie.trailers ? movie.trailers.join(", ") : "");
       setPreviewPoster(movie.poster ? `${baseURL.replace('/api', '')}${movie.poster}` : null);
       setPreviewBanner(movie.banner ? `${baseURL.replace('/api', '')}${movie.banner}` : null);
     } catch (err) {
@@ -89,6 +120,24 @@ const StaffMovieForm = ({ currentUser }) => {
     try {
       const response = await axios.get(`${baseURL}/staff/genres`, { headers, params: { limit: 100 } });
       setGenres(response.data.genres || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchAllMovies = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/staff/movies`, { headers, params: { limit: 1000 } });
+      setAllMovies(response.data.movies || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchAllNews = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/staff/news`, { headers });
+      setAllNews(response.data || []);
     } catch (err) {
       console.error(err);
     }
@@ -109,7 +158,7 @@ const StaffMovieForm = ({ currentUser }) => {
 
     const formData = new FormData();
     Object.keys(form).forEach(key => {
-      if (key === 'genres') {
+      if (['genres', 'authors', 'producers', 'studios', 'trailers', 'relatedMovies', 'relatedNews'].includes(key)) {
         formData.append(key, JSON.stringify(form[key]));
       } else {
         formData.append(key, form[key]);
@@ -222,9 +271,6 @@ const StaffMovieForm = ({ currentUser }) => {
           <h2>{isEditMode ? "Edit Movie" : "Add New Movie"}</h2>
           <p className="admin-subtitle">{isEditMode ? "Update movie details." : "Fill in the details below to create a new movie."}</p>
         </div>
-        <div>
-          <Link to="/staff/movies" className="ghost-button">← Back to List</Link>
-        </div>
       </div>
 
       {globalError && <p className="status-error">{globalError}</p>}
@@ -312,20 +358,107 @@ const StaffMovieForm = ({ currentUser }) => {
           </div>
 
           <div className="field">
-            <label>Trailer Link (Youtube)</label>
-            <input
-              type="url"
-              value={form.trailer}
-              onChange={(e) => setForm({ ...form, trailer: e.target.value })}
-              placeholder="https://youtube.com/..."
+            <label>Type</label>
+            <CustomSelect
+              value={form.type}
+              onChange={(val) => setForm({ ...form, type: val })}
+              options={[
+                { value: "tv series", label: "TV Series" },
+                { value: "movie", label: "Movie" },
+                { value: "ova", label: "OVA" },
+                { value: "specials", label: "Specials" }
+              ]}
+              placeholder="Select type..."
+              style={{ width: "100%" }}
             />
+          </div>
+
+          <div className="field">
+            <label>Authors (comma-separated)</label>
+            <input
+              type="text"
+              value={authorsText}
+              onChange={(e) => {
+                setAuthorsText(e.target.value);
+                setForm({ ...form, authors: e.target.value.split(",").map(s => s.trim()).filter(Boolean) });
+              }}
+              placeholder="e.g. Tsugumi Ohba, Takeshi Obata"
+            />
+          </div>
+
+          <div className="field">
+            <label>Producers (comma-separated)</label>
+            <input
+              type="text"
+              value={producersText}
+              onChange={(e) => {
+                setProducersText(e.target.value);
+                setForm({ ...form, producers: e.target.value.split(",").map(s => s.trim()).filter(Boolean) });
+              }}
+              placeholder="e.g. Aniplex, Bandai Namco"
+            />
+          </div>
+
+          <div className="field">
+            <label>Studios (comma-separated)</label>
+            <input
+              type="text"
+              value={studiosText}
+              onChange={(e) => {
+                setStudiosText(e.target.value);
+                setForm({ ...form, studios: e.target.value.split(",").map(s => s.trim()).filter(Boolean) });
+              }}
+              placeholder="e.g. Madhouse, MAPPA"
+            />
+          </div>
+
+          <div className="field" style={{ gridColumn: "span 2" }}>
+            <label>Trailer Links (Youtube)</label>
+            {(form.trailers.length === 0 ? [""] : form.trailers).map((tr, index) => (
+              <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                <input
+                  type="url"
+                  value={tr}
+                  onChange={(e) => {
+                    const list = form.trailers.length === 0 ? [""] : [...form.trailers];
+                    list[index] = e.target.value;
+                    setForm({ ...form, trailers: list });
+                  }}
+                  placeholder="https://youtube.com/..."
+                />
+                {form.trailers.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newTrailers = form.trailers.filter((_, i) => i !== index);
+                      setForm({ ...form, trailers: newTrailers });
+                    }}
+                    className="ghost-button"
+                    style={{ color: "red", borderColor: "red", padding: "0 1rem" }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const current = form.trailers.length === 0 ? [""] : form.trailers;
+                setForm({ ...form, trailers: [...current, ""] });
+              }}
+              className="ghost-button"
+              style={{ width: "fit-content", marginTop: "4px" }}
+            >
+              + Add Another Trailer Link
+            </button>
           </div>
 
           <div className="field">
             <label>Poster Image (Vertical)</label>
             <div className="file-input-wrapper">
-              <button type="button" className="ghost-button" style={{ pointerEvents: 'none' }}>
-                📸 Choose Poster...
+              <button type="button" className="ghost-button" style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CameraIcon size={16} /> Choose Poster...
               </button>
               <input type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'poster')} />
             </div>
@@ -335,8 +468,8 @@ const StaffMovieForm = ({ currentUser }) => {
           <div className="field">
             <label>Banner Image (Horizontal)</label>
             <div className="file-input-wrapper">
-              <button type="button" className="ghost-button" style={{ pointerEvents: 'none' }}>
-                🖼️ Choose Banner...
+              <button type="button" className="ghost-button" style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ImageIcon size={16} /> Choose Banner...
               </button>
               <input type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'banner')} />
             </div>
@@ -392,6 +525,118 @@ const StaffMovieForm = ({ currentUser }) => {
                         }}
                       />
                       {g.name}
+                    </label>
+                  ))
+              )}
+            </div>
+          </div>
+
+          {/* Related Movies */}
+          <div className="field" style={{ gridColumn: "span 2" }}>
+            <label>Related Movies (Other Movies in System)</label>
+            <div style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="text"
+                placeholder="Search movies..."
+                value={movieSearch}
+                onChange={(e) => setMovieSearch(e.target.value)}
+                style={{
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  border: "1px solid #d8c6b3",
+                  background: "#fffaf3",
+                  fontSize: "0.9rem",
+                  width: "250px"
+                }}
+              />
+              {movieSearch && (
+                <button
+                  type="button"
+                  onClick={() => setMovieSearch("")}
+                  className="ghost-button"
+                  style={{ padding: "0.3rem 0.8rem", fontSize: "0.85rem" }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid #d8c6b3", padding: "10px", borderRadius: "8px", background: "#fffaf3", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {allMovies.filter(m => !id || m._id !== id).length === 0 ? (
+                <span style={{ color: "var(--muted)", fontSize: "0.9rem", fontStyle: "italic" }}>No other movies available.</span>
+              ) : allMovies.filter(m => (!id || m._id !== id) && m.name.toLowerCase().includes(movieSearch.toLowerCase())).length === 0 ? (
+                <span style={{ color: "var(--muted)", fontSize: "0.9rem", fontStyle: "italic" }}>No movies match your search.</span>
+              ) : (
+                allMovies
+                  .filter(m => (!id || m._id !== id) && m.name.toLowerCase().includes(movieSearch.toLowerCase()))
+                  .map(m => (
+                    <label key={m._id} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.9rem", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={form.relatedMovies.includes(m._id)}
+                        onChange={(e) => {
+                          const newMovies = e.target.checked 
+                            ? [...form.relatedMovies, m._id] 
+                            : form.relatedMovies.filter(mId => mId !== m._id);
+                          setForm({ ...form, relatedMovies: newMovies });
+                        }}
+                      />
+                      {m.name}
+                    </label>
+                  ))
+              )}
+            </div>
+          </div>
+
+          {/* Related Articles / News */}
+          <div className="field" style={{ gridColumn: "span 2" }}>
+            <label>Related News Articles</label>
+            <div style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={newsSearch}
+                onChange={(e) => setNewsSearch(e.target.value)}
+                style={{
+                  padding: "0.45rem 0.8rem",
+                  borderRadius: "999px",
+                  border: "1px solid #d8c6b3",
+                  background: "#fffaf3",
+                  fontSize: "0.9rem",
+                  width: "250px"
+                }}
+              />
+              {newsSearch && (
+                <button
+                  type="button"
+                  onClick={() => setNewsSearch("")}
+                  className="ghost-button"
+                  style={{ padding: "0.3rem 0.8rem", fontSize: "0.85rem" }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid #d8c6b3", padding: "10px", borderRadius: "8px", background: "#fffaf3", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {allNews.length === 0 ? (
+                <span style={{ color: "var(--muted)", fontSize: "0.9rem", fontStyle: "italic" }}>No articles available.</span>
+              ) : allNews.filter(n => n.title.toLowerCase().includes(newsSearch.toLowerCase())).length === 0 ? (
+                <span style={{ color: "var(--muted)", fontSize: "0.9rem", fontStyle: "italic" }}>No articles match your search.</span>
+              ) : (
+                allNews
+                  .filter(n => n.title.toLowerCase().includes(newsSearch.toLowerCase()))
+                  .map(n => (
+                    <label key={n._id} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.9rem", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={form.relatedNews.includes(n._id)}
+                        onChange={(e) => {
+                          const newNews = e.target.checked 
+                            ? [...form.relatedNews, n._id] 
+                            : form.relatedNews.filter(nId => nId !== n._id);
+                          setForm({ ...form, relatedNews: newNews });
+                        }}
+                      />
+                      {n.title}
                     </label>
                   ))
               )}

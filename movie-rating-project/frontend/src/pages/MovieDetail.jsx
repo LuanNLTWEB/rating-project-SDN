@@ -103,27 +103,71 @@ const MovieDetail = () => {
             <p style={{ lineHeight: "1.7", fontSize: "1.05rem", color: "var(--ink)", whiteSpace: "pre-line" }}>{movie.summary}</p>
           </div>
 
-          {ytId ? (
+          {(() => {
+            const allTrailersList = [];
+            if (movie.trailer) allTrailersList.push(movie.trailer);
+            if (movie.trailers && movie.trailers.length > 0) {
+              movie.trailers.forEach(tr => {
+                if (tr && !allTrailersList.includes(tr)) {
+                  allTrailersList.push(tr);
+                }
+              });
+            }
+
+            if (allTrailersList.length === 0) return null;
+
+            return (
+              <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
+                <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>
+                  {allTrailersList.length > 1 ? "Trailers" : "Trailer"}
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "1rem" }}>
+                  {allTrailersList.map((trLink, index) => {
+                    const yId = getYouTubeId(trLink);
+                    return yId ? (
+                      <div key={index}>
+                        {allTrailersList.length > 1 && <h4 style={{ margin: "0 0 8px 0", color: "var(--ink)", fontSize: "0.95rem" }}>Trailer {index + 1}</h4>}
+                        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px", border: "1px solid #ead6c3" }}>
+                          <iframe
+                            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                            src={`https://www.youtube.com/embed/${yId}`}
+                            title={`${movie.name} Trailer ${index + 1}`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={index} style={{ padding: "10px", borderRadius: "8px", background: "#fffaf3", border: "1px solid #ead6c3" }}>
+                        Watch trailer here: <a href={trLink} target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary)", textDecoration: "underline" }}>{trLink}</a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Related Movies */}
+          {movie.relatedMovies && movie.relatedMovies.length > 0 && (
             <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
-              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Trailer</h3>
-              <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px", border: "1px solid #ead6c3", marginTop: "1rem" }}>
-                <iframe
-                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
-                  src={`https://www.youtube.com/embed/${ytId}`}
-                  title={`${movie.name} Trailer`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Related Anime / Movies</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
+                {movie.relatedMovies.map(rm => (
+                  <Link key={rm._id} to={`/movies/${rm._id}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <div style={{ width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee", border: "1px solid #ead6c3" }}>
+                      {rm.poster ? (
+                        <img src={`${baseURL.replace('/api', '')}${rm.poster}`} alt={rm.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.8rem" }}>No Poster</div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: "0.9rem", fontWeight: "600", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.3" }}>{rm.name}</span>
+                  </Link>
+                ))}
               </div>
             </div>
-          ) : movie.trailer ? (
-            <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
-              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Trailer</h3>
-              <p style={{ marginTop: "1rem" }}>
-                Watch trailer here: <a href={movie.trailer} target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary)", textDecoration: "underline" }}>{movie.trailer}</a>
-              </p>
-            </div>
-          ) : null}
+          )}
         </div>
 
         {/* Right Side: Metadata / Info */}
@@ -147,6 +191,34 @@ const MovieDetail = () => {
                 <span style={{ fontSize: "1rem", fontWeight: "500" }}>{new Date(movie.releaseDate).toLocaleDateString()}</span>
               </div>
 
+              {movie.type && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Type</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500", textTransform: "uppercase" }}>{movie.type}</span>
+                </div>
+              )}
+
+              {movie.authors && movie.authors.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Authors</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.authors.join(", ")}</span>
+                </div>
+              )}
+
+              {movie.producers && movie.producers.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Producers</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.producers.join(", ")}</span>
+                </div>
+              )}
+
+              {movie.studios && movie.studios.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Studios</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.studios.join(", ")}</span>
+                </div>
+              )}
+
               <div>
                 <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Genres</span>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
@@ -163,6 +235,30 @@ const MovieDetail = () => {
               </div>
             </div>
           </div>
+
+          {/* Related News Articles */}
+          {movie.relatedNews && movie.relatedNews.length > 0 && (
+            <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
+              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Related News Articles</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+                {movie.relatedNews.map(rn => (
+                  <Link key={rn._id} to={`/news/${rn._id || rn}`} style={{ textDecoration: "none", color: "inherit", display: "flex", gap: "16px", padding: "10px", borderRadius: "8px", border: "1px solid #ead6c3", background: "#fffaf3", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = '#f5e4d3'} onMouseLeave={e => e.currentTarget.style.background = '#fffaf3'}>
+                    <div style={{ width: "80px", height: "60px", borderRadius: "6px", overflow: "hidden", flexShrink: 0, backgroundColor: "#eee" }}>
+                      {rn.imageUrls && rn.imageUrls.length > 0 ? (
+                        <img src={`${baseURL.replace('/api', '')}${rn.imageUrls[0]}`} alt={rn.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.7rem" }}>No Image</div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "0.95rem", fontWeight: "600", color: "var(--ink)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{rn.title}</h4>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--muted)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.4" }}>{rn.summary}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

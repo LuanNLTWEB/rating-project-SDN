@@ -46,6 +46,47 @@ const movieSchema = new mongoose.Schema(
         ref: "Genre",
       },
     ],
+    authors: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    type: {
+      type: String,
+      enum: ["ova", "movie", "tv series", "specials"],
+      default: "tv series",
+    },
+    producers: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    studios: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    trailers: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    relatedMovies: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Movie",
+      },
+    ],
+    relatedNews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "News",
+      },
+    ],
   },
   { timestamps: true }
 );
