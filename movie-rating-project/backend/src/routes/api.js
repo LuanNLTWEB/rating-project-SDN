@@ -24,6 +24,14 @@ const {
 	toggleMovieStatus,
 	deleteMovie,
 } = require("../controllers/movieController");
+const {
+	listPublicNews,
+	syncExternalNews,
+	createNews,
+	staffListNews,
+	staffUpdateNews,
+	deleteNews,
+} = require("../controllers/newsController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
@@ -87,5 +95,13 @@ router.put(
 );
 router.patch("/staff/movies/:id/toggle-status", authenticate, requireStaff, toggleMovieStatus);
 router.delete("/staff/movies/:id", authenticate, requireStaff, deleteMovie);
+
+// News routes
+router.get("/news", listPublicNews);
+router.post("/staff/news/sync", authenticate, requireStaff, syncExternalNews);
+router.post("/staff/news", authenticate, requireStaff, upload.array("images", 10), createNews);
+router.get("/staff/news", authenticate, requireStaff, staffListNews);
+router.put("/staff/news/:id", authenticate, requireStaff, upload.array("images", 10), staffUpdateNews);
+router.delete("/staff/news/:id", authenticate, requireStaff, deleteNews);
 
 module.exports = router;

@@ -11,6 +11,11 @@ import AdminGenreForm from "./pages/AdminGenreForm.jsx";
 import StaffMovies from "./pages/StaffMovies.jsx";
 import StaffMovieForm from "./pages/StaffMovieForm.jsx";
 import MovieDetail from "./pages/MovieDetail.jsx";
+import NewsList from "./pages/NewsList.jsx";
+import NewsDetail from "./pages/NewsDetail.jsx";
+import StaffNewsDashboard from "./pages/StaffNewsDashboard.jsx";
+import StaffNewsEditor from "./pages/StaffNewsEditor.jsx";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -82,14 +87,17 @@ const App = () => {
             <Link to="/">Home</Link>
             <Link to="/staff/genres">Genres</Link>
             <Link to="/staff/movies">Movies</Link>
+            <Link to="/staff/news">News CMS</Link>
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
+            <Link to="/news">News</Link>
           </nav>
         )}
       </header>
 
+      <Toaster position="top-right" />
       <main className="app-main">
         <Routes>
           {user?.role === "admin" ? (
@@ -143,13 +151,29 @@ const App = () => {
                 path="/staff/movies/edit/:id"
                 element={<StaffMovieForm currentUser={user} />}
               />
+              <Route
+                path="/staff/news"
+                element={<StaffNewsDashboard />}
+              />
+              <Route
+                path="/staff/news/create"
+                element={<StaffNewsEditor />}
+              />
+              <Route
+                path="/staff/news/edit/:id"
+                element={<StaffNewsEditor />}
+              />
               <Route path="/movies/:id" element={<MovieDetail />} />
+              <Route path="/news" element={<NewsList />} />
+              <Route path="/news/:id" element={<NewsDetail />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
               <Route path="/" element={<Home status={status} />} />
               <Route path="/movies/:id" element={<MovieDetail />} />
+              <Route path="/news" element={<NewsList />} />
+              <Route path="/news/:id" element={<NewsDetail />} />
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<Navigate to="/" replace />} />

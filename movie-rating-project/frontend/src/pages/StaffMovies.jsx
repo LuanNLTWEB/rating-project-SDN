@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const StaffMovies = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -44,15 +45,39 @@ const StaffMovies = ({ currentUser }) => {
     }
   };
 
-  const handleDelete = async (movie) => {
-    if (!window.confirm(`Xóa phim "${movie.name}"?`)) return;
-    try {
-      await axios.delete(`${baseURL}/staff/movies/${movie._id}`, { headers });
-      setMessage("Đã xóa phim");
-      fetchMovies();
-    } catch (err) {
-      setGlobalError(err?.response?.data?.message || "Lỗi khi xóa");
-    }
+  const handleDelete = (movie) => {
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '250px' }}>
+        <p style={{ margin: 0, fontWeight: 600, color: 'var(--ink)' }}>Xóa phim "{movie.name}"?</p>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+          <button 
+            className="ghost-button" 
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Hủy
+          </button>
+          <button 
+            className="primary-button danger" 
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'var(--danger)', boxShadow: 'none' }}
+            onClick={async () => {
+              toast.dismiss(t.id);
+              const toastId = toast.loading("Đang xóa phim...");
+              try {
+                await axios.delete(`${baseURL}/staff/movies/${movie._id}`, { headers });
+                toast.success("Đã xóa phim!", { id: toastId });
+                fetchMovies();
+              } catch (err) {
+                console.error(err);
+                toast.error(err?.response?.data?.message || "Lỗi khi xóa", { id: toastId });
+              }
+            }}
+          >
+            Xóa
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity });
   };
 
   const handleToggleStatus = async (movie) => {

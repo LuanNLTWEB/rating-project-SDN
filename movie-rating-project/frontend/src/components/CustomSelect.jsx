@@ -56,7 +56,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, style, buttonStyl
             boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
             zIndex: 100,
             maxHeight: "220px",
-            overflowY: "auto",
+            overflowY: options.length > 5 ? "auto" : "hidden",
             marginTop: "4px"
           }}
         >

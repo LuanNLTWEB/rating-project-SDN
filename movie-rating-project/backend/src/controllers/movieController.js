@@ -88,7 +88,10 @@ const listMovies = async (req, res) => {
 
 const getMovieById = async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id).populate("genres", "name");
+    const movie = await Movie.findById(req.params.id)
+      .populate("genres", "name")
+      .populate("relatedMovies", "name poster")
+      .populate("relatedNews", "title imageUrls summary");
     if (!movie) {
       return res.status(404).json({ message: "Không tìm thấy phim" });
     }
@@ -100,11 +103,23 @@ const getMovieById = async (req, res) => {
 
 const createMovie = async (req, res) => {
   try {
-    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres } = req.body;
+    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
     if (!name || !name.trim()) return res.status(400).json({ message: "Tên phim không được bỏ trống" });
     if (!summary || !summary.trim()) return res.status(400).json({ message: "Tóm tắt không được bỏ trống" });
     if (!releaseDate) return res.status(400).json({ message: "Ngày phát hành không được bỏ trống" });
+
+    const parseArray = (val) => {
+      if (!val) return [];
+      if (typeof val === 'string') {
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return val.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      return Array.isArray(val) ? val : [val];
+    };
 
     const movieData = {
       name: name.trim(),
@@ -114,11 +129,21 @@ const createMovie = async (req, res) => {
       totalEpisodes: totalEpisodes || 1,
       status: status || "ongoing",
       isActive: isActive !== undefined ? isActive === "true" || isActive === true : true,
+      type: type || "tv series",
+      authors: parseArray(authors),
+      producers: parseArray(producers),
+      studios: parseArray(studios),
+      trailers: parseArray(trailers),
+      relatedMovies: parseArray(relatedMovies),
+      relatedNews: parseArray(relatedNews),
     };
 
     if (genres) {
       movieData.genres = typeof genres === 'string' ? JSON.parse(genres) : genres;
     }
+
+    if (poster) movieData.poster = poster;
+    if (banner) movieData.banner = banner;
 
     if (req.files) {
       if (req.files.poster && req.files.poster[0]) {
@@ -149,7 +174,7 @@ const createMovie = async (req, res) => {
 
 const updateMovie = async (req, res) => {
   try {
-    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres } = req.body;
+    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(404).json({ message: "Không tìm thấy phim" });
@@ -161,10 +186,39 @@ const updateMovie = async (req, res) => {
     if (totalEpisodes) movie.totalEpisodes = totalEpisodes;
     if (status) movie.status = status;
     if (isActive !== undefined) movie.isActive = isActive === "true" || isActive === true;
+    if (type) movie.type = type;
     
+    const parseArray = (val) => {
+      if (!val) return [];
+      if (typeof val === 'string') {
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return val.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      return Array.isArray(val) ? val : [val];
+    };
+
     if (genres) {
       movie.genres = typeof genres === 'string' ? JSON.parse(genres) : genres;
     }
+
+    if (authors !== undefined) movie.authors = parseArray(authors);
+    if (producers !== undefined) movie.producers = parseArray(producers);
+    if (studios !== undefined) movie.studios = parseArray(studios);
+    if (trailers !== undefined) movie.trailers = parseArray(trailers);
+    
+    // Explicitly handle relatedMovies and relatedNews. Empty string check ensures we can clear them.
+    if (relatedMovies !== undefined) {
+      movie.relatedMovies = parseArray(relatedMovies);
+    }
+    if (relatedNews !== undefined) {
+      movie.relatedNews = parseArray(relatedNews);
+    }
+
+    if (poster) movie.poster = poster;
+    if (banner) movie.banner = banner;
 
     if (req.files) {
       if (req.files.poster && req.files.poster[0]) {
