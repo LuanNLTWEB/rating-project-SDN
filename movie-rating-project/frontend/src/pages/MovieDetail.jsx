@@ -62,7 +62,7 @@ const MovieDetail = () => {
           borderRadius: "16px",
           overflow: "hidden",
           backgroundColor: "#222",
-          backgroundImage: movie.banner ? `url(${baseURL.replace('/api', '')}${movie.banner})` : "none",
+          backgroundImage: movie.banner ? `url(${movie.banner.startsWith('http') ? movie.banner : baseURL.replace('/api', '') + movie.banner})` : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
           boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
@@ -75,7 +75,7 @@ const MovieDetail = () => {
           {/* Poster over banner */}
           <div style={{ width: "160px", aspectRatio: "2/3", borderRadius: "12px", overflow: "hidden", border: "4px solid #fff", boxShadow: "0 10px 20px rgba(0,0,0,0.3)", backgroundColor: "#eee", flexShrink: 0 }}>
             {movie.poster ? (
-              <img src={`${baseURL.replace('/api', '')}${movie.poster}`} alt={movie.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={movie.poster.startsWith('http') ? movie.poster : `${baseURL.replace('/api', '')}${movie.poster}`} alt={movie.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888" }}>No Poster</div>
             )}
@@ -157,7 +157,7 @@ const MovieDetail = () => {
                   <Link key={rm._id} to={`/movies/${rm._id}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", gap: "6px" }}>
                     <div style={{ width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee", border: "1px solid #ead6c3" }}>
                       {rm.poster ? (
-                        <img src={`${baseURL.replace('/api', '')}${rm.poster}`} alt={rm.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <img src={rm.poster.startsWith('http') ? rm.poster : `${baseURL.replace('/api', '')}${rm.poster}`} alt={rm.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.8rem" }}>No Poster</div>
                       )}

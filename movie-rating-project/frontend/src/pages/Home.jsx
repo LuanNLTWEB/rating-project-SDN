@@ -237,7 +237,7 @@ const Home = ({ status, currentUser }) => {
                   <div style={{ position: "relative", width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eae0d5" }}>
                     {movie.poster ? (
                       <img
-                        src={`${import.meta.env.VITE_API_URL.replace('/api', '')}${movie.poster}`}
+                        src={movie.poster.startsWith('http') ? movie.poster : `${import.meta.env.VITE_API_URL.replace('/api', '')}${movie.poster}`}
                         alt={movie.name}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
