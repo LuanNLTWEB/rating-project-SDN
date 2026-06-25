@@ -81,7 +81,7 @@ const Home = ({ status, currentUser }) => {
     <section>
       <div className="hero">
         <h2>Welcome to AniMê</h2>
-        <p>{status}</p>
+        <p>Cuối cùng mới có một bộ anime mà nhân vật chính đúng chuẩn hình mẫu lý tưởng của tao. Một kẻ lạnh lùng và ít nói. Đám bạn không hiểu tại sao tao trở nên im lặng và luôn được 5 điểm bài kiểm tra. Chúng nó không biết năng lực thực sự của tao và không hề biết tao xuất chúng tới mức nào. Tao chẳng coi chúng là gì ngoài công cụ. Tao ước mình có thể vào trong thế giới anime và bộc lộ con người thực sự của mình. Tao tin chắc rằng tao chính là hoá thân ngoài đời thực của Ayanokoji Kyotaka.</p>
       </div>
 
       <div className="admin-card" style={{ marginTop: "2rem" }}>
@@ -217,16 +217,16 @@ const Home = ({ status, currentUser }) => {
           <div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1.5rem", marginTop: "1.5rem" }}>
               {movies.map((movie) => (
-                <Link 
+                <Link
                   to={`/movies/${movie._id}`}
-                  key={movie._id} 
-                  className="admin-card" 
-                  style={{ 
-                    display: "flex", 
-                    flexDirection: "column", 
-                    padding: "0.75rem", 
-                    borderRadius: "12px", 
-                    border: "1px solid #ead6c3", 
+                  key={movie._id}
+                  className="admin-card"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: "0.75rem",
+                    borderRadius: "12px",
+                    border: "1px solid #ead6c3",
                     background: "#fff",
                     boxShadow: "0 4px 6px rgba(0,0,0,0.02)",
                     textDecoration: "none",
@@ -244,36 +244,36 @@ const Home = ({ status, currentUser }) => {
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#9c8c7d", fontSize: "0.9rem" }}>No Image</div>
                     )}
-                    <span 
-                      style={{ 
-                        position: "absolute", 
-                        top: "8px", 
-                        right: "8px", 
-                        background: "rgba(0,0,0,0.6)", 
-                        color: "#fff", 
-                        padding: "3px 8px", 
-                        borderRadius: "4px", 
-                        fontSize: "0.75rem", 
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        background: "rgba(0,0,0,0.6)",
+                        color: "#fff",
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        fontSize: "0.75rem",
                         textTransform: "capitalize",
-                        fontWeight: "500" 
+                        fontWeight: "500"
                       }}
                     >
                       {movie.status}
                     </span>
                   </div>
                   <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", flexGrow: 1 }}>
-                    <h4 
-                      style={{ 
-                        margin: "0 0 0.5rem", 
-                        fontSize: "1rem", 
+                    <h4
+                      style={{
+                        margin: "0 0 0.5rem",
+                        fontSize: "1rem",
                         fontWeight: "600",
-                        color: "var(--ink)", 
-                        display: "-webkit-box", 
-                        WebkitLineClamp: 2, 
-                        WebkitBoxOrient: "vertical", 
-                        overflow: "hidden", 
-                        height: "2.6rem", 
-                        lineHeight: "1.3rem" 
+                        color: "var(--ink)",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        height: "2.6rem",
+                        lineHeight: "1.3rem"
                       }}
                     >
                       {movie.name}
@@ -293,17 +293,17 @@ const Home = ({ status, currentUser }) => {
 
             {/* Pagination */}
             <div className="admin-pagination" style={{ marginTop: "2rem" }}>
-              <button 
-                className="ghost-button" 
-                onClick={() => setPage(p => Math.max(p - 1, 1))} 
+              <button
+                className="ghost-button"
+                onClick={() => setPage(p => Math.max(p - 1, 1))}
                 disabled={page <= 1}
               >
                 Previous
               </button>
               <span>Page {page} of {totalPages}</span>
-              <button 
-                className="ghost-button" 
-                onClick={() => setPage(p => Math.min(p + 1, totalPages))} 
+              <button
+                className="ghost-button"
+                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
                 disabled={page >= totalPages}
               >
                 Next
