@@ -82,7 +82,7 @@ const listMovies = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -93,11 +93,11 @@ const getMovieById = async (req, res) => {
       .populate("relatedMovies", "name poster")
       .populate("relatedNews", "title imageUrls summary");
     if (!movie) {
-      return res.status(404).json({ message: "Không tìm thấy phim" });
+      return res.status(404).json({ message: "Movie not found" });
     }
     return res.status(200).json({ movie });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -105,9 +105,9 @@ const createMovie = async (req, res) => {
   try {
     const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
-    if (!name || !name.trim()) return res.status(400).json({ message: "Tên phim không được bỏ trống" });
-    if (!summary || !summary.trim()) return res.status(400).json({ message: "Tóm tắt không được bỏ trống" });
-    if (!releaseDate) return res.status(400).json({ message: "Ngày phát hành không được bỏ trống" });
+    if (!name || !name.trim()) return res.status(400).json({ message: "Movie name is required" });
+    if (!summary || !summary.trim()) return res.status(400).json({ message: "Summary is required" });
+    if (!releaseDate) return res.status(400).json({ message: "Release date is required" });
 
     const parseArray = (val) => {
       if (!val) return [];
@@ -166,9 +166,9 @@ const createMovie = async (req, res) => {
       details: { movieId: movie._id, name: movie.name },
     });
 
-    return res.status(201).json({ message: "Thêm phim thành công", movie });
+    return res.status(201).json({ message: "Movie created successfully", movie });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -177,7 +177,7 @@ const updateMovie = async (req, res) => {
     const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
     const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).json({ message: "Không tìm thấy phim" });
+    if (!movie) return res.status(404).json({ message: "Movie not found" });
 
     if (name) movie.name = name.trim();
     if (summary) movie.summary = summary.trim();
@@ -240,16 +240,16 @@ const updateMovie = async (req, res) => {
       details: { movieId: movie._id, name: movie.name },
     });
 
-    return res.status(200).json({ message: "Cập nhật phim thành công", movie });
+    return res.status(200).json({ message: "Movie updated successfully", movie });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 const toggleMovieStatus = async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).json({ message: "Không tìm thấy phim" });
+    if (!movie) return res.status(404).json({ message: "Movie not found" });
 
     movie.isActive = !movie.isActive;
     await movie.save();
@@ -263,16 +263,16 @@ const toggleMovieStatus = async (req, res) => {
       details: { movieId: movie._id, name: movie.name, isActive: movie.isActive },
     });
 
-    return res.status(200).json({ message: movie.isActive ? "Phim đã được hiển thị" : "Phim đã bị ẩn", movie });
+    return res.status(200).json({ message: movie.isActive ? "Movie is now visible" : "Movie is now hidden", movie });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 const deleteMovie = async (req, res) => {
   try {
     const movie = await Movie.findByIdAndDelete(req.params.id);
-    if (!movie) return res.status(404).json({ message: "Không tìm thấy phim" });
+    if (!movie) return res.status(404).json({ message: "Movie not found" });
 
     await AdminAuditLog.create({
       adminId: req.user._id,
@@ -283,9 +283,9 @@ const deleteMovie = async (req, res) => {
       details: { movieId: movie._id, name: movie.name },
     });
 
-    return res.status(200).json({ message: "Xóa phim thành công" });
+    return res.status(200).json({ message: "Movie deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Lỗi server", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
