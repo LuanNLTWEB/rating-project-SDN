@@ -48,32 +48,32 @@ const StaffMovies = ({ currentUser }) => {
   const handleDelete = (movie) => {
     toast((t) => (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '250px' }}>
-        <p style={{ margin: 0, fontWeight: 600, color: 'var(--ink)' }}>Xóa phim "{movie.name}"?</p>
+        <p style={{ margin: 0, fontWeight: 600, color: 'var(--ink)' }}>Delete movie "{movie.name}"?</p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           <button 
             className="ghost-button" 
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
             onClick={() => toast.dismiss(t.id)}
           >
-            Hủy
+            Cancel
           </button>
           <button 
             className="primary-button danger" 
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'var(--danger)', boxShadow: 'none' }}
             onClick={async () => {
               toast.dismiss(t.id);
-              const toastId = toast.loading("Đang xóa phim...");
+              const toastId = toast.loading("Deleting movie...");
               try {
                 await axios.delete(`${baseURL}/staff/movies/${movie._id}`, { headers });
-                toast.success("Đã xóa phim!", { id: toastId });
+                toast.success("Deleted successfully!", { id: toastId });
                 fetchMovies();
               } catch (err) {
                 console.error(err);
-                toast.error(err?.response?.data?.message || "Lỗi khi xóa", { id: toastId });
+                toast.error(err?.response?.data?.message || "Error deleting movie", { id: toastId });
               }
             }}
           >
-            Xóa
+            Delete
           </button>
         </div>
       </div>
