@@ -71,7 +71,7 @@ const Home = ({ status, currentUser }) => {
   const yearOptions = useMemo(() => {
     const current = new Date().getFullYear();
     const years = [];
-    for (let y = current; y >= current - 10; y--) {
+    for (let y = current + 2; y >= 1990; y--) {
       years.push(y);
     }
     return years;
