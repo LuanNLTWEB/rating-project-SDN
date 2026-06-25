@@ -20,7 +20,7 @@ export default function StaffNewsEditor() {
     summary: "", 
     content: "", 
     imageUrls: "", 
-    videoUrls: "", 
+    videoUrls: [], 
     authorName: "", 
     tags: "", 
     status: "draft", 
@@ -62,7 +62,7 @@ export default function StaffNewsEditor() {
               summary: article.summary,
               content: article.content,
               imageUrls: article.imageUrls ? article.imageUrls.join(", ") : "",
-              videoUrls: article.videoUrls ? article.videoUrls.join(", ") : "",
+              videoUrls: article.videoUrls || [],
               authorName: article.authorName || "",
               tags: article.tags ? article.tags.join(", ") : "",
               status: article.status,
@@ -101,7 +101,15 @@ export default function StaffNewsEditor() {
       };
 
       splitAndAppend(form.imageUrls, "imageUrls");
-      splitAndAppend(form.videoUrls, "videoUrls");
+      
+      if (Array.isArray(form.videoUrls)) {
+        const filtered = form.videoUrls.filter(v => v.trim());
+        if (filtered.length > 0) {
+          filtered.forEach(v => formData.append("videoUrls", v.trim()));
+        } else {
+          formData.append("videoUrls", "");
+        }
+      }
       splitAndAppend(form.sourceUrls, "sourceUrls");
       splitAndAppend(form.tags, "tags");
       
@@ -186,6 +194,13 @@ export default function StaffNewsEditor() {
                       onChange={e => setImagesFiles(e.target.files.length > 0 ? [e.target.files[0]] : [])} 
                     />
                   </div>
+                  <label style={{marginTop: "8px", fontSize: "0.85rem"}}>Or Cover Image URL (e.g. ImgBB, imgur)</label>
+                  <input 
+                    type="text" 
+                    value={form.imageUrls} 
+                    onChange={e => setForm({...form, imageUrls: e.target.value})} 
+                    placeholder="https://i.ibb.co/.../cover.jpg"
+                  />
                   {imagesFiles.length > 0 && (
                     <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                       <span style={{ fontSize: "0.85rem", color: "var(--primary)", fontWeight: "600" }}>Cover image ready to upload.</span>
@@ -194,23 +209,46 @@ export default function StaffNewsEditor() {
                   )}
                 </div>
               </div>
-              <div className="field">
-                <label>Cover Image URL (Optional link)</label>
-                <input 
-                  type="text" 
-                  value={form.imageUrls} 
-                  onChange={e => setForm({...form, imageUrls: e.target.value})} 
-                  placeholder="https://example.com/cover.jpg"
-                />
-              </div>
-             <div className="field">
-               <label>Video Embed URLs (Comma separated)</label>
-               <input 
-                 type="text" 
-                 value={form.videoUrls} 
-                 onChange={e => setForm({...form, videoUrls: e.target.value})} 
-                 placeholder="https://youtube.com/embed/..."
-               />
+             <div className="field" style={{ gridColumn: "span 2" }}>
+               <label>Video Embed URLs (Youtube)</label>
+               {(form.videoUrls.length === 0 ? [""] : form.videoUrls).map((vUrl, index) => (
+                 <div key={index} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                   <input
+                     type="url"
+                     value={vUrl}
+                     onChange={(e) => {
+                       const list = form.videoUrls.length === 0 ? [""] : [...form.videoUrls];
+                       list[index] = e.target.value;
+                       setForm({ ...form, videoUrls: list });
+                     }}
+                     placeholder="https://youtube.com/embed/..."
+                   />
+                   {form.videoUrls.length > 0 && (
+                     <button
+                       type="button"
+                       onClick={() => {
+                         const newList = form.videoUrls.filter((_, i) => i !== index);
+                         setForm({ ...form, videoUrls: newList });
+                       }}
+                       className="ghost-button"
+                       style={{ color: "red", borderColor: "red", padding: "0 1rem" }}
+                     >
+                       Remove
+                     </button>
+                   )}
+                 </div>
+               ))}
+               <button
+                 type="button"
+                 onClick={() => {
+                   const current = form.videoUrls.length === 0 ? [""] : form.videoUrls;
+                   setForm({ ...form, videoUrls: [...current, ""] });
+                 }}
+                 className="ghost-button"
+                 style={{ width: "fit-content", marginTop: "4px" }}
+               >
+                 + Add Another Video Link
+               </button>
              </div>
              <div className="field">
                <label>Author Name</label>

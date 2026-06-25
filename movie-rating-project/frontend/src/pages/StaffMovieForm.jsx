@@ -7,7 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/datepicker.css";
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { Camera as CameraIcon, Image as ImageIcon } from "lucide-react";
+import { Camera as CameraIcon, Image as ImageIcon, X as XIcon } from "lucide-react";
 
 const StaffMovieForm = ({ currentUser }) => {
   const { id } = useParams();
@@ -41,6 +41,8 @@ const StaffMovieForm = ({ currentUser }) => {
     trailers: [],
     relatedMovies: [],
     relatedNews: [],
+    poster: "",
+    banner: "",
   });
   
   // Validation State
@@ -102,13 +104,15 @@ const StaffMovieForm = ({ currentUser }) => {
         trailers: movie.trailers || [],
         relatedMovies: movie.relatedMovies ? movie.relatedMovies.map(m => m._id || m) : [],
         relatedNews: movie.relatedNews ? movie.relatedNews.map(n => n._id || n) : [],
+        poster: movie.poster && movie.poster.startsWith('http') ? movie.poster : "",
+        banner: movie.banner && movie.banner.startsWith('http') ? movie.banner : "",
       });
       setAuthorsText(movie.authors ? movie.authors.join(", ") : "");
       setProducersText(movie.producers ? movie.producers.join(", ") : "");
       setStudiosText(movie.studios ? movie.studios.join(", ") : "");
       setTrailersText(movie.trailers ? movie.trailers.join(", ") : "");
-      setPreviewPoster(movie.poster ? `${baseURL.replace('/api', '')}${movie.poster}` : null);
-      setPreviewBanner(movie.banner ? `${baseURL.replace('/api', '')}${movie.banner}` : null);
+      setPreviewPoster(movie.poster ? (movie.poster.startsWith('http') ? movie.poster : `${baseURL.replace('/api', '')}${movie.poster}`) : null);
+      setPreviewBanner(movie.banner ? (movie.banner.startsWith('http') ? movie.banner : `${baseURL.replace('/api', '')}${movie.banner}`) : null);
     } catch (err) {
       setGlobalError("Failed to load movie details for editing.");
     } finally {
@@ -462,7 +466,31 @@ const StaffMovieForm = ({ currentUser }) => {
               </button>
               <input type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'poster')} />
             </div>
-            {previewPoster && <img src={previewPoster} alt="Poster" style={{ height: "220px", aspectRatio: "2/3", marginTop: "10px", borderRadius: "8px", objectFit: "cover" }} />}
+            <label style={{marginTop: "8px", fontSize: "0.85rem"}}>Or Poster URL (e.g. ImgBB)</label>
+            <input 
+              type="text" 
+              value={form.poster} 
+              onChange={e => {
+                setForm({...form, poster: e.target.value});
+                setPreviewPoster(e.target.value);
+              }} 
+              placeholder="https://i.ibb.co/.../poster.jpg"
+            />
+            {previewPoster && (
+              <div style={{ marginTop: "10px", position: "relative", width: "fit-content" }}>
+                <img src={previewPoster} alt="Poster" style={{ height: "220px", aspectRatio: "2/3", borderRadius: "8px", objectFit: "cover", display: "block" }} />
+                <button 
+                  type="button" 
+                  onClick={() => { setPreviewPoster(null); setPosterFile(null); setForm({...form, poster: ""}); }} 
+                  style={{ 
+                    position: "absolute", top: "5px", right: "5px", background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" 
+                  }}
+                  title="Clear Poster"
+                >
+                  <XIcon size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="field">
@@ -473,7 +501,31 @@ const StaffMovieForm = ({ currentUser }) => {
               </button>
               <input type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'banner')} />
             </div>
-            {previewBanner && <img src={previewBanner} alt="Banner" style={{ height: "220px", aspectRatio: "16/9", marginTop: "10px", borderRadius: "8px", objectFit: "cover", maxWidth: "100%" }} />}
+            <label style={{marginTop: "8px", fontSize: "0.85rem"}}>Or Banner URL (e.g. ImgBB)</label>
+            <input 
+              type="text" 
+              value={form.banner} 
+              onChange={e => {
+                setForm({...form, banner: e.target.value});
+                setPreviewBanner(e.target.value);
+              }} 
+              placeholder="https://i.ibb.co/.../banner.jpg"
+            />
+            {previewBanner && (
+              <div style={{ marginTop: "10px", position: "relative", width: "fit-content" }}>
+                <img src={previewBanner} alt="Banner" style={{ height: "220px", aspectRatio: "16/9", borderRadius: "8px", objectFit: "cover", maxWidth: "100%", display: "block" }} />
+                <button 
+                  type="button" 
+                  onClick={() => { setPreviewBanner(null); setBannerFile(null); setForm({...form, banner: ""}); }} 
+                  style={{ 
+                    position: "absolute", top: "5px", right: "5px", background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" 
+                  }}
+                  title="Clear Banner"
+                >
+                  <XIcon size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="field" style={{ gridColumn: "span 2" }}>

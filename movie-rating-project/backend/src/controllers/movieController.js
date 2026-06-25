@@ -103,7 +103,7 @@ const getMovieById = async (req, res) => {
 
 const createMovie = async (req, res) => {
   try {
-    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews } = req.body;
+    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
     if (!name || !name.trim()) return res.status(400).json({ message: "Tên phim không được bỏ trống" });
     if (!summary || !summary.trim()) return res.status(400).json({ message: "Tóm tắt không được bỏ trống" });
@@ -142,6 +142,9 @@ const createMovie = async (req, res) => {
       movieData.genres = typeof genres === 'string' ? JSON.parse(genres) : genres;
     }
 
+    if (poster) movieData.poster = poster;
+    if (banner) movieData.banner = banner;
+
     if (req.files) {
       if (req.files.poster && req.files.poster[0]) {
         movieData.poster = `/uploads/${req.files.poster[0].filename}`;
@@ -171,7 +174,7 @@ const createMovie = async (req, res) => {
 
 const updateMovie = async (req, res) => {
   try {
-    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews } = req.body;
+    const { name, summary, trailer, releaseDate, totalEpisodes, status, isActive, genres, authors, type, producers, studios, trailers, relatedMovies, relatedNews, poster, banner } = req.body;
 
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(404).json({ message: "Không tìm thấy phim" });
@@ -213,6 +216,9 @@ const updateMovie = async (req, res) => {
     if (relatedNews !== undefined) {
       movie.relatedNews = parseArray(relatedNews);
     }
+
+    if (poster) movie.poster = poster;
+    if (banner) movie.banner = banner;
 
     if (req.files) {
       if (req.files.poster && req.files.poster[0]) {
