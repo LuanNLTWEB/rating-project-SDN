@@ -81,7 +81,7 @@ const Home = ({ status, currentUser }) => {
     <section>
       <div className="hero">
         <h2>Welcome to AniMê</h2>
-        <p>{status}</p>
+        <p>Discover your next favorite anime, explore the latest news, and share your ratings with the community.</p>
       </div>
 
       <div className="admin-card" style={{ marginTop: "2rem" }}>
