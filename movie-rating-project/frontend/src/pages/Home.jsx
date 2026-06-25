@@ -10,7 +10,7 @@ const Home = ({ status, currentUser }) => {
   const [movieName, setMovieName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSeason, setSelectedSeason] = useState("");
-  const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
+  const [seasonYear, setSeasonYear] = useState("");
 
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(1);
@@ -150,8 +150,8 @@ const Home = ({ status, currentUser }) => {
             <CustomSelect
               value={seasonYear}
               onChange={setSeasonYear}
-              options={yearOptions.map(y => ({ value: y, label: y.toString() }))}
-              placeholder={new Date().getFullYear().toString()}
+              options={[{ value: "", label: "All Years" }, ...yearOptions.map(y => ({ value: y, label: y.toString() }))]}
+              placeholder="All Years"
             />
           </div>
         </div>
