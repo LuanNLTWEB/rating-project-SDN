@@ -82,7 +82,7 @@ export default function NewsList() {
             
             {/* Top Hot News */}
             {filteredNews.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
                 {filteredNews.slice(0, 3).map((item, index) => (
                   <Link 
                     key={item._id} 
