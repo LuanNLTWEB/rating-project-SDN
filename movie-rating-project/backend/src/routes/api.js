@@ -16,6 +16,15 @@ const {
 	toggleGenreStatus,
 	deleteGenre,
 } = require("../controllers/genreController");
+const {
+	listMovies,
+	getMovieById,
+	createMovie,
+	updateMovie,
+	toggleMovieStatus,
+	deleteMovie,
+} = require("../controllers/movieController");
+const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
 const router = express.Router();
@@ -51,5 +60,32 @@ router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, togg
 router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
 
 router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
+
+router.get("/movies", listMovies);
+router.get("/movies/:id", getMovieById);
+
+router.get("/staff/movies", authenticate, requireStaff, listMovies);
+router.post(
+	"/staff/movies",
+	authenticate,
+	requireStaff,
+	upload.fields([
+		{ name: "poster", maxCount: 1 },
+		{ name: "banner", maxCount: 1 },
+	]),
+	createMovie
+);
+router.put(
+	"/staff/movies/:id",
+	authenticate,
+	requireStaff,
+	upload.fields([
+		{ name: "poster", maxCount: 1 },
+		{ name: "banner", maxCount: 1 },
+	]),
+	updateMovie
+);
+router.patch("/staff/movies/:id/toggle-status", authenticate, requireStaff, toggleMovieStatus);
+router.delete("/staff/movies/:id", authenticate, requireStaff, deleteMovie);
 
 module.exports = router;

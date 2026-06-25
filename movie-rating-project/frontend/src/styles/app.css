@@ -566,3 +566,40 @@ a:hover {
     flex: 1;
   }
 }
+
+/* Custom Styled Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fffaf3;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9b39d;
+  border-radius: 999px;
+  border: 2px solid #fffaf3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Firefox scrollbar compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c9b39d #fffaf3;
+}
+
+/* Hide scrollbar for Custom Select dropdown options */
+.custom-select-menu {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+.custom-select-menu::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+

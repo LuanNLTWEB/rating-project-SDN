@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import CustomSelect from "../components/CustomSelect.jsx";
 
 const roles = ["customer", "staff", "admin"];
 
@@ -144,20 +145,18 @@ const AdminUsers = ({ currentUser }) => {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <select
+          <CustomSelect
             value={roleFilter}
-            onChange={(event) => {
-              setRoleFilter(event.target.value);
+            onChange={(val) => {
+              setRoleFilter(val);
               setPage(1);
             }}
-          >
-            <option value="all">All roles</option>
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "all", label: "All roles" },
+              ...roles.map(role => ({ value: role, label: role }))
+            ]}
+            placeholder="All roles"
+          />
           <button type="submit" className="ghost-button">
             Search
           </button>
@@ -192,18 +191,14 @@ const AdminUsers = ({ currentUser }) => {
                     <span className={`role-badge role-${user.role}`}>
                       {user.role}
                     </span>
-                    <select
+                    <CustomSelect
                       value={user.role}
-                      onChange={(event) =>
-                        handleRoleChange(user._id, event.target.value)
-                      }
-                    >
-                      {roles.map((role) => (
-                        <option key={role} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => handleRoleChange(user._id, val)}
+                      options={roles.map(role => ({ value: role, label: role }))}
+                      placeholder="Select role"
+                      style={{ width: "100%", marginTop: "5px" }}
+                      buttonStyle={{ minWidth: "90px", padding: "0.4rem 0.8rem", fontSize: "0.85rem", borderRadius: "8px" }}
+                    />
                   </span>
                   <span className="status-cell">
                     <span

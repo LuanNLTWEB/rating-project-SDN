@@ -7,6 +7,10 @@ import Register from "./pages/Register.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 import AdminGenres from "./pages/AdminGenres.jsx";
+import AdminGenreForm from "./pages/AdminGenreForm.jsx";
+import StaffMovies from "./pages/StaffMovies.jsx";
+import StaffMovieForm from "./pages/StaffMovieForm.jsx";
+import MovieDetail from "./pages/MovieDetail.jsx";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -77,6 +81,7 @@ const App = () => {
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
             <Link to="/staff/genres">Genres</Link>
+            <Link to="/staff/movies">Movies</Link>
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
@@ -98,6 +103,14 @@ const App = () => {
                 element={<AdminGenres currentUser={user} />}
               />
               <Route
+                path="/admin/genres/create"
+                element={<AdminGenreForm currentUser={user} />}
+              />
+              <Route
+                path="/admin/genres/edit/:id"
+                element={<AdminGenreForm currentUser={user} />}
+              />
+              <Route
                 path="/admin/audit"
                 element={<AdminAuditLogs currentUser={user} />}
               />
@@ -110,11 +123,33 @@ const App = () => {
                 path="/staff/genres"
                 element={<AdminGenres currentUser={user} />}
               />
+              <Route
+                path="/staff/genres/create"
+                element={<AdminGenreForm currentUser={user} />}
+              />
+              <Route
+                path="/staff/genres/edit/:id"
+                element={<AdminGenreForm currentUser={user} />}
+              />
+              <Route
+                path="/staff/movies"
+                element={<StaffMovies currentUser={user} />}
+              />
+              <Route
+                path="/staff/movies/create"
+                element={<StaffMovieForm currentUser={user} />}
+              />
+              <Route
+                path="/staff/movies/edit/:id"
+                element={<StaffMovieForm currentUser={user} />}
+              />
+              <Route path="/movies/:id" element={<MovieDetail />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
               <Route path="/" element={<Home status={status} />} />
+              <Route path="/movies/:id" element={<MovieDetail />} />
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<Navigate to="/" replace />} />
