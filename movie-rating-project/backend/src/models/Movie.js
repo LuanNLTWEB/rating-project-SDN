@@ -87,6 +87,10 @@ const movieSchema = new mongoose.Schema(
         ref: "News",
       },
     ],
+    viewCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

@@ -23,6 +23,8 @@ const {
 	updateMovie,
 	toggleMovieStatus,
 	deleteMovie,
+	getTrendingMovies,
+	incrementViewCount,
 } = require("../controllers/movieController");
 const {
 	listPublicNews,
@@ -32,6 +34,20 @@ const {
 	staffUpdateNews,
 	deleteNews,
 } = require("../controllers/newsController");
+const {
+	addFavorite,
+	removeFavorite,
+	listFavorites,
+	checkFavorite,
+} = require("../controllers/favoriteController");
+const {
+	addToWatchlist,
+	updateWatchlistStatus,
+	removeFromWatchlist,
+	listWatchlist,
+	toggleWatchlistPrivacy,
+	setAllPrivacy,
+} = require("../controllers/watchlistController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
@@ -70,7 +86,9 @@ router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
 router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
 
 router.get("/movies", listMovies);
+router.get("/movies/trending", getTrendingMovies);
 router.get("/movies/:id", getMovieById);
+router.patch("/movies/:id/view", incrementViewCount);
 
 router.get("/staff/movies", authenticate, requireStaff, listMovies);
 router.post(
@@ -103,5 +121,19 @@ router.post("/staff/news", authenticate, requireStaff, upload.array("images", 10
 router.get("/staff/news", authenticate, requireStaff, staffListNews);
 router.put("/staff/news/:id", authenticate, requireStaff, upload.array("images", 10), staffUpdateNews);
 router.delete("/staff/news/:id", authenticate, requireStaff, deleteNews);
+
+// Favorite routes
+router.post("/favorites", authenticate, addFavorite);
+router.delete("/favorites/:movieId", authenticate, removeFavorite);
+router.get("/favorites", authenticate, listFavorites);
+router.get("/favorites/:movieId/check", authenticate, checkFavorite);
+
+// Watchlist routes
+router.post("/watchlist", authenticate, addToWatchlist);
+router.put("/watchlist/:movieId", authenticate, updateWatchlistStatus);
+router.delete("/watchlist/:movieId", authenticate, removeFromWatchlist);
+router.get("/watchlist", authenticate, listWatchlist);
+router.patch("/watchlist/:movieId/privacy", authenticate, toggleWatchlistPrivacy);
+router.patch("/watchlist/privacy", authenticate, setAllPrivacy);
 
 module.exports = router;

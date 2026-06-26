@@ -289,6 +289,36 @@ const deleteMovie = async (req, res) => {
   }
 };
 
+const getTrendingMovies = async (req, res) => {
+  try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+    const movies = await Movie.find({ isActive: true })
+      .populate("genres", "name")
+      .sort({ viewCount: -1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+    return res.status(200).json({ movies });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const incrementViewCount = async (req, res) => {
+  try {
+    const movie = await Movie.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    );
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+    return res.status(200).json({ message: "View count updated", viewCount: movie.viewCount });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   listMovies,
   getMovieById,
@@ -296,4 +326,6 @@ module.exports = {
   updateMovie,
   toggleMovieStatus,
   deleteMovie,
+  getTrendingMovies,
+  incrementViewCount,
 };

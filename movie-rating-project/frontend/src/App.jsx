@@ -15,7 +15,11 @@ import NewsList from "./pages/NewsList.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
 import StaffNewsDashboard from "./pages/StaffNewsDashboard.jsx";
 import StaffNewsEditor from "./pages/StaffNewsEditor.jsx";
+import Trending from "./pages/Trending.jsx";
+import Favorites from "./pages/Favorites.jsx";
+import WatchlistPage from "./pages/WatchlistPage.jsx";
 import { Toaster } from "react-hot-toast";
+import { Heart, Eye, Flame } from "lucide-react";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -52,6 +56,18 @@ const App = () => {
     navigate("/login");
   };
 
+  const isLoggedIn = !!user;
+
+  const publicRoutes = (
+    <>
+      <Route path="/" element={<Home status={status} />} />
+      <Route path="/trending" element={<Trending />} />
+      <Route path="/movies/:id" element={<MovieDetail currentUser={user} />} />
+      <Route path="/news" element={<NewsList />} />
+      <Route path="/news/:id" element={<NewsDetail />} />
+    </>
+  );
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -61,13 +77,13 @@ const App = () => {
             <h1 className="app-title">AniMê</h1>
           </div>
           <div className="header-actions">
-            {!user && (
+            {!isLoggedIn && (
               <div className="auth-links">
                 <Link to="/login">Login</Link>
                 <Link to="/register">Register</Link>
               </div>
             )}
-            {user && (
+            {isLoggedIn && (
               <div className="user-meta">
                 <span>Hi, {user.name}</span>
                 <button type="button" className="ghost-button" onClick={handleLogout}>
@@ -77,10 +93,14 @@ const App = () => {
             )}
           </div>
         </div>
+
         {user?.role === "admin" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
+            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
+            <Link to="/favorites"><Heart size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Favorites</Link>
+            <Link to="/watchlist"><Eye size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Watchlist</Link>
           </nav>
         ) : user?.role === "staff" ? (
           <nav className="nav-links nav-secondary">
@@ -88,11 +108,21 @@ const App = () => {
             <Link to="/staff/genres">Genres</Link>
             <Link to="/staff/movies">Movies</Link>
             <Link to="/staff/news">News CMS</Link>
+            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
+          </nav>
+        ) : user?.role === "customer" ? (
+          <nav className="nav-links nav-secondary">
+            <Link to="/">Home</Link>
+            <Link to="/news">News</Link>
+            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
+            <Link to="/favorites"><Heart size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Favorites</Link>
+            <Link to="/watchlist"><Eye size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Watchlist</Link>
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
             <Link to="/news">News</Link>
+            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
           </nav>
         )}
       </header>
@@ -102,6 +132,9 @@ const App = () => {
         <Routes>
           {user?.role === "admin" ? (
             <>
+              {publicRoutes}
+              <Route path="/favorites" element={<Favorites currentUser={user} />} />
+              <Route path="/watchlist" element={<WatchlistPage currentUser={user} />} />
               <Route
                 path="/admin/users"
                 element={<AdminUsers currentUser={user} />}
@@ -126,7 +159,9 @@ const App = () => {
             </>
           ) : user?.role === "staff" ? (
             <>
-              <Route path="/" element={<Home status={status} currentUser={user} />} />
+              {publicRoutes}
+              <Route path="/favorites" element={<Favorites currentUser={user} />} />
+              <Route path="/watchlist" element={<WatchlistPage currentUser={user} />} />
               <Route
                 path="/staff/genres"
                 element={<AdminGenres currentUser={user} />}
@@ -163,17 +198,18 @@ const App = () => {
                 path="/staff/news/edit/:id"
                 element={<StaffNewsEditor />}
               />
-              <Route path="/movies/:id" element={<MovieDetail />} />
-              <Route path="/news" element={<NewsList />} />
-              <Route path="/news/:id" element={<NewsDetail />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          ) : user?.role === "customer" ? (
+            <>
+              {publicRoutes}
+              <Route path="/favorites" element={<Favorites currentUser={user} />} />
+              <Route path="/watchlist" element={<WatchlistPage currentUser={user} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
-              <Route path="/" element={<Home status={status} />} />
-              <Route path="/movies/:id" element={<MovieDetail />} />
-              <Route path="/news" element={<NewsList />} />
-              <Route path="/news/:id" element={<NewsDetail />} />
+              {publicRoutes}
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { api } from "../services/api.js";
+import toast from "react-hot-toast";
+import { Heart, Eye, Clock, CheckCircle, BookmarkPlus } from "lucide-react";
 
-const MovieDetail = () => {
+const statusOptions = [
+  { value: "watching", label: "Đang xem" },
+  { value: "will_watch", label: "Sẽ xem" },
+  { value: "completed", label: "Hoàn thành" },
+];
+
+const MovieDetail = ({ currentUser }) => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [watchlistStatus, setWatchlistStatus] = useState("");
+  const [showWatchlistMenu, setShowWatchlistMenu] = useState(false);
 
   const baseURL = import.meta.env.VITE_API_URL;
 
@@ -16,6 +28,8 @@ const MovieDetail = () => {
       try {
         const response = await axios.get(`${baseURL}/movies/${id}`);
         setMovie(response.data.movie);
+        // Increment view count
+        axios.patch(`${baseURL}/movies/${id}/view`).catch(() => {});
       } catch (err) {
         setError(err?.response?.data?.message || "Failed to load movie details.");
       } finally {
@@ -24,6 +38,66 @@ const MovieDetail = () => {
     };
     fetchMovieDetail();
   }, [id, baseURL]);
+
+  useEffect(() => {
+    if (!currentUser || !id) return;
+    api.get(`/favorites/${id}/check`).then(res => setIsFavorite(res.data.isFavorite)).catch(() => {});
+    api.get("/watchlist", { params: { status: "" } }).then(res => {
+      const item = res.data.items?.find(i => i.movie?._id === id);
+      if (item) setWatchlistStatus(item.status);
+    }).catch(() => {});
+  }, [currentUser, id]);
+
+  const handleToggleFavorite = async () => {
+    if (!currentUser) {
+      toast.error("Please login first");
+      return;
+    }
+    try {
+      if (isFavorite) {
+        await api.delete(`/favorites/${id}`);
+        setIsFavorite(false);
+        toast.success("Removed from favorites");
+      } else {
+        await api.post("/favorites", { movieId: id });
+        setIsFavorite(true);
+        toast.success("Added to favorites");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update");
+    }
+  };
+
+  const handleAddToWatchlist = async (status) => {
+    if (!currentUser) {
+      toast.error("Please login first");
+      return;
+    }
+    try {
+      if (watchlistStatus) {
+        await api.put(`/watchlist/${id}`, { status });
+        setWatchlistStatus(status);
+        toast.success("Watchlist updated");
+      } else {
+        await api.post("/watchlist", { movieId: id, status });
+        setWatchlistStatus(status);
+        toast.success("Added to watchlist");
+      }
+      setShowWatchlistMenu(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update");
+    }
+  };
+
+  const handleRemoveFromWatchlist = async () => {
+    try {
+      await api.delete(`/watchlist/${id}`);
+      setWatchlistStatus("");
+      toast.success("Removed from watchlist");
+    } catch {
+      toast.error("Failed to remove");
+    }
+  };
 
   const getYouTubeId = (url) => {
     if (!url) return null;
@@ -51,6 +125,8 @@ const MovieDetail = () => {
 
   const ytId = getYouTubeId(movie.trailer);
 
+  const watchlistLabel = statusOptions.find(o => o.value === watchlistStatus)?.label;
+
   return (
     <div className="admin-shell" style={{ padding: "20px 0" }}>
       {/* Banner Backdrop */}
@@ -68,11 +144,9 @@ const MovieDetail = () => {
           boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
         }}
       >
-        {/* Dark overlay for text readability */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.3) 100%)" }} />
 
         <div style={{ position: "absolute", bottom: "24px", left: "24px", right: "24px", display: "flex", alignItems: "flex-end", gap: "24px", flexWrap: "wrap" }}>
-          {/* Poster over banner */}
           <div style={{ width: "160px", aspectRatio: "2/3", borderRadius: "12px", overflow: "hidden", border: "4px solid #fff", boxShadow: "0 10px 20px rgba(0,0,0,0.3)", backgroundColor: "#eee", flexShrink: 0 }}>
             {movie.poster ? (
               <img src={movie.poster.startsWith('http') ? movie.poster : `${baseURL.replace('/api', '')}${movie.poster}`} alt={movie.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -89,6 +163,53 @@ const MovieDetail = () => {
             <p style={{ margin: 0, opacity: 0.9, fontSize: "0.95rem" }}>
               Released: {new Date(movie.releaseDate).toLocaleDateString()}
             </p>
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+              <button
+                onClick={handleToggleFavorite}
+                className="primary-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: isFavorite ? "var(--danger)" : "var(--primary)" }}
+              >
+                <Heart size={16} fill={isFavorite ? "#fff" : "none"} />
+                {isFavorite ? "Favorited" : "Favorite"}
+              </button>
+
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => watchlistStatus ? handleRemoveFromWatchlist() : setShowWatchlistMenu(!showWatchlistMenu)}
+                  className="primary-button"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: watchlistStatus ? "var(--success)" : "var(--primary)" }}
+                >
+                  <BookmarkPlus size={16} />
+                  {watchlistStatus ? watchlistLabel : "Watchlist"}
+                </button>
+                {showWatchlistMenu && (
+                  <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "4px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", zIndex: 10, minWidth: "180px", overflow: "hidden" }}>
+                    {statusOptions.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleAddToWatchlist(opt.value)}
+                        style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: watchlistStatus === opt.value ? "#f5e4d3" : "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--ink)" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#f5e4d3"}
+                        onMouseLeave={e => e.currentTarget.style.background = watchlistStatus === opt.value ? "#f5e4d3" : "#fff"}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                    {watchlistStatus && (
+                      <button
+                        onClick={handleRemoveFromWatchlist}
+                        style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--danger)", borderTop: "1px solid #ead6c3" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#fdf0ee"}
+                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                      >
+                        Remove from watchlist
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
