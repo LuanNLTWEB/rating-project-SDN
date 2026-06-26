@@ -132,7 +132,7 @@ const WatchlistPage = ({ currentUser }) => {
             if (!movie) return null;
             const sc = statusColors[item.status] || {};
             return (
-              <div key={item._id} className="admin-card" style={{ padding: 0, overflow: "hidden" }}>
+              <div key={item._id} className="admin-card" style={{ padding: 0 }}>
                 <div style={{ display: "flex", gap: "12px", padding: "12px" }}>
                   <Link to={`/movies/${movie._id}`} style={{ flexShrink: 0, textDecoration: "none" }}>
                     <div style={{ width: "80px", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee" }}>

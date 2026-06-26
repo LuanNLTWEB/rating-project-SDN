@@ -28,8 +28,13 @@ const MovieDetail = ({ currentUser }) => {
       try {
         const response = await axios.get(`${baseURL}/movies/${id}`);
         setMovie(response.data.movie);
-        // Increment view count
-        axios.patch(`${baseURL}/movies/${id}/view`).catch(() => {});
+        // Increment view count only once per session
+        const viewed = JSON.parse(sessionStorage.getItem("viewedMovies") || "[]");
+        if (!viewed.includes(id)) {
+          axios.patch(`${baseURL}/movies/${id}/view`).catch(() => {});
+          viewed.push(id);
+          sessionStorage.setItem("viewedMovies", JSON.stringify(viewed));
+        }
       } catch (err) {
         setError(err?.response?.data?.message || "Failed to load movie details.");
       } finally {
@@ -163,54 +168,55 @@ const MovieDetail = ({ currentUser }) => {
             <p style={{ margin: 0, opacity: 0.9, fontSize: "0.95rem" }}>
               Released: {new Date(movie.releaseDate).toLocaleDateString()}
             </p>
-            {/* Action Buttons */}
-            <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-              <button
-                onClick={handleToggleFavorite}
-                className="primary-button"
-                style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: isFavorite ? "var(--danger)" : "var(--primary)" }}
-              >
-                <Heart size={16} fill={isFavorite ? "#fff" : "none"} />
-                {isFavorite ? "Favorited" : "Favorite"}
-              </button>
-
-              <div style={{ position: "relative" }}>
-                <button
-                  onClick={() => watchlistStatus ? handleRemoveFromWatchlist() : setShowWatchlistMenu(!showWatchlistMenu)}
-                  className="primary-button"
-                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: watchlistStatus ? "var(--success)" : "var(--primary)" }}
-                >
-                  <BookmarkPlus size={16} />
-                  {watchlistStatus ? watchlistLabel : "Watchlist"}
-                </button>
-                {showWatchlistMenu && (
-                  <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "4px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", zIndex: 10, minWidth: "180px", overflow: "hidden" }}>
-                    {statusOptions.map(opt => (
-                      <button
-                        key={opt.value}
-                        onClick={() => handleAddToWatchlist(opt.value)}
-                        style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: watchlistStatus === opt.value ? "#f5e4d3" : "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--ink)" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#f5e4d3"}
-                        onMouseLeave={e => e.currentTarget.style.background = watchlistStatus === opt.value ? "#f5e4d3" : "#fff"}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                    {watchlistStatus && (
-                      <button
-                        onClick={handleRemoveFromWatchlist}
-                        style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--danger)", borderTop: "1px solid #ead6c3" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#fdf0ee"}
-                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}
-                      >
-                        Remove from watchlist
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Action Buttons below banner */}
+      <div style={{ display: "flex", gap: "10px", marginTop: "1rem", marginBottom: "1.5rem" }}>
+        <button
+          onClick={handleToggleFavorite}
+          className="primary-button"
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: isFavorite ? "var(--danger)" : "var(--primary)" }}
+        >
+          <Heart size={16} fill={isFavorite ? "#fff" : "none"} />
+          {isFavorite ? "Favorited" : "Favorite"}
+        </button>
+
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => watchlistStatus ? handleRemoveFromWatchlist() : setShowWatchlistMenu(!showWatchlistMenu)}
+            className="primary-button"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: watchlistStatus ? "var(--success)" : "var(--primary)" }}
+          >
+            <BookmarkPlus size={16} />
+            {watchlistStatus ? watchlistLabel : "Watchlist"}
+          </button>
+          {showWatchlistMenu && (
+            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "4px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", zIndex: 10, minWidth: "180px", overflow: "hidden" }}>
+              {statusOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleAddToWatchlist(opt.value)}
+                  style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: watchlistStatus === opt.value ? "#f5e4d3" : "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--ink)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#f5e4d3"}
+                  onMouseLeave={e => e.currentTarget.style.background = watchlistStatus === opt.value ? "#f5e4d3" : "#fff"}
+                >
+                  {opt.label}
+                </button>
+              ))}
+              {watchlistStatus && (
+                <button
+                  onClick={handleRemoveFromWatchlist}
+                  style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--danger)", borderTop: "1px solid #ead6c3" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#fdf0ee"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                >
+                  Remove from watchlist
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

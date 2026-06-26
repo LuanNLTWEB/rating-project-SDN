@@ -19,7 +19,6 @@ import Trending from "./pages/Trending.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
 import { Toaster } from "react-hot-toast";
-import { Heart, Eye, Flame } from "lucide-react";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -98,9 +97,9 @@ const App = () => {
           <nav className="nav-links nav-secondary">
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
-            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
-            <Link to="/favorites"><Heart size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Favorites</Link>
-            <Link to="/watchlist"><Eye size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Watchlist</Link>
+            <Link to="/trending">Trending</Link>
+            <Link to="/favorites">Favorites</Link>
+            <Link to="/watchlist">Watchlist</Link>
           </nav>
         ) : user?.role === "staff" ? (
           <nav className="nav-links nav-secondary">
@@ -108,21 +107,21 @@ const App = () => {
             <Link to="/staff/genres">Genres</Link>
             <Link to="/staff/movies">Movies</Link>
             <Link to="/staff/news">News CMS</Link>
-            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
+            <Link to="/trending">Trending</Link>
           </nav>
         ) : user?.role === "customer" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
             <Link to="/news">News</Link>
-            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
-            <Link to="/favorites"><Heart size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Favorites</Link>
-            <Link to="/watchlist"><Eye size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Watchlist</Link>
+            <Link to="/trending">Trending</Link>
+            <Link to="/favorites">Favorites</Link>
+            <Link to="/watchlist">Watchlist</Link>
           </nav>
         ) : (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
             <Link to="/news">News</Link>
-            <Link to="/trending"><Flame size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />Trending</Link>
+            <Link to="/trending">Trending</Link>
           </nav>
         )}
       </header>
