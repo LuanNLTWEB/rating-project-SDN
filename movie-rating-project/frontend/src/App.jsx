@@ -18,6 +18,7 @@ import StaffNewsEditor from "./pages/StaffNewsEditor.jsx";
 import Trending from "./pages/Trending.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
@@ -64,6 +65,7 @@ const App = () => {
       <Route path="/movies/:id" element={<MovieDetail currentUser={user} />} />
       <Route path="/news" element={<NewsList />} />
       <Route path="/news/:id" element={<NewsDetail />} />
+      <Route path="/reviews" element={<Reviews currentUser={user} />} />
     </>
   );
 
@@ -98,6 +100,7 @@ const App = () => {
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/reviews">Reviews</Link>
             <Link to="/favorites">Favorites</Link>
             <Link to="/watchlist">Watchlist</Link>
           </nav>
@@ -108,12 +111,14 @@ const App = () => {
             <Link to="/staff/movies">Movies</Link>
             <Link to="/staff/news">News CMS</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/reviews">Reviews</Link>
           </nav>
         ) : user?.role === "customer" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
             <Link to="/news">News</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/reviews">Reviews</Link>
             <Link to="/favorites">Favorites</Link>
             <Link to="/watchlist">Watchlist</Link>
           </nav>
@@ -122,6 +127,7 @@ const App = () => {
             <Link to="/">Home</Link>
             <Link to="/news">News</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/reviews">Reviews</Link>
           </nav>
         )}
       </header>

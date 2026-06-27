@@ -48,6 +48,14 @@ const {
 	toggleWatchlistPrivacy,
 	setAllPrivacy,
 } = require("../controllers/watchlistController");
+const {
+	createReview,
+	updateReview,
+	deleteReview,
+	getReviewsForMovie,
+	reactToReview,
+	getAllReviews,
+} = require("../controllers/reviewController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 
@@ -135,5 +143,13 @@ router.delete("/watchlist/:movieId", authenticate, removeFromWatchlist);
 router.get("/watchlist", authenticate, listWatchlist);
 router.patch("/watchlist/:movieId/privacy", authenticate, toggleWatchlistPrivacy);
 router.patch("/watchlist/privacy", authenticate, setAllPrivacy);
+
+// Review routes
+router.get("/reviews", getAllReviews);
+router.get("/movies/:movieId/reviews", getReviewsForMovie);
+router.post("/movies/:movieId/reviews", authenticate, createReview);
+router.put("/reviews/:id", authenticate, updateReview);
+router.delete("/reviews/:id", authenticate, deleteReview);
+router.post("/reviews/:id/react", authenticate, reactToReview);
 
 module.exports = router;

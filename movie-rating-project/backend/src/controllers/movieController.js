@@ -5,7 +5,7 @@ const AdminAuditLog = require("../models/AdminAuditLog");
 const listMovies = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 1000);
     
     const filter = {};
     if (req.query.search) {

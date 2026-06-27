@@ -81,7 +81,7 @@ const Home = ({ status, currentUser }) => {
     <section>
       <div className="hero">
         <h2>Welcome to AniMê</h2>
-        <p>Cuối cùng mới có một bộ anime mà nhân vật chính đúng chuẩn hình mẫu lý tưởng của tao. Một kẻ lạnh lùng và ít nói. Đám bạn không hiểu tại sao tao trở nên im lặng và luôn được 5 điểm bài kiểm tra. Chúng nó không biết năng lực thực sự của tao và không hề biết tao xuất chúng tới mức nào. Tao chẳng coi chúng là gì ngoài công cụ. Tao ước mình có thể vào trong thế giới anime và bộc lộ con người thực sự của mình. Tao tin chắc rằng tao chính là hoá thân ngoài đời thực của Ayanokoji Kyotaka.</p>
+        <p>Finally, an anime where the protagonist is my ideal role model. A cold and silent individual. My friends don't understand why I've become quiet and always get 5 on tests. They don't know my true abilities and how exceptional I really am. I see them as nothing but tools. I wish I could enter the anime world and reveal my true self. I firmly believe I am the real-life incarnation of Ayanokoji Kyotaka.</p>
       </div>
 
       <div className="admin-card" style={{ marginTop: "2rem" }}>

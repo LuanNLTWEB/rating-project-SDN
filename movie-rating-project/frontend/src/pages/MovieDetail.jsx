@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Heart, Eye, Clock, CheckCircle, BookmarkPlus } from "lucide-react";
+import ReviewForm from "../components/Review/ReviewForm";
+import ReviewList from "../components/Review/ReviewList";
 
 const statusOptions = [
-  { value: "watching", label: "Đang xem" },
-  { value: "will_watch", label: "Sẽ xem" },
-  { value: "completed", label: "Hoàn thành" },
+  { value: "watching", label: "Watching" },
+  { value: "will_watch", label: "Plan to Watch" },
+  { value: "completed", label: "Completed" },
 ];
 
 const MovieDetail = ({ currentUser }) => {
   const { id } = useParams();
+  const location = useLocation();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [watchlistStatus, setWatchlistStatus] = useState("");
   const [showWatchlistMenu, setShowWatchlistMenu] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const baseURL = import.meta.env.VITE_API_URL;
 
@@ -45,6 +49,17 @@ const MovieDetail = ({ currentUser }) => {
   }, [id, baseURL]);
 
   useEffect(() => {
+    if (!loading && location.hash === "#review-section") {
+      setTimeout(() => {
+        const el = document.getElementById("review-section");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [loading, location.hash]);
+
+  useEffect(() => {
     if (!currentUser || !id) return;
     api.get(`/favorites/${id}/check`).then(res => setIsFavorite(res.data.isFavorite)).catch(() => {});
     api.get("/watchlist", { params: { status: "" } }).then(res => {
@@ -52,6 +67,19 @@ const MovieDetail = ({ currentUser }) => {
       if (item) setWatchlistStatus(item.status);
     }).catch(() => {});
   }, [currentUser, id]);
+
+  useEffect(() => {
+    if (!id) return;
+    api.get(`/movies/${id}/reviews`).then(res => setReviews(res.data.reviews || [])).catch(() => {});
+  }, [id]);
+
+  const handleReviewAdded = () => {
+    api.get(`/movies/${id}/reviews`).then(res => setReviews(res.data.reviews || [])).catch(() => {});
+  };
+
+  const handleReviewDeleted = (deletedId) => {
+    setReviews(reviews.filter(r => r._id !== deletedId));
+  };
 
   const handleToggleFavorite = async () => {
     if (!currentUser) {
@@ -185,7 +213,7 @@ const MovieDetail = ({ currentUser }) => {
 
         <div style={{ position: "relative" }}>
           <button
-            onClick={() => watchlistStatus ? handleRemoveFromWatchlist() : setShowWatchlistMenu(!showWatchlistMenu)}
+            onClick={() => setShowWatchlistMenu(!showWatchlistMenu)}
             className="primary-button"
             style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: watchlistStatus ? "var(--success)" : "var(--primary)" }}
           >
@@ -389,6 +417,65 @@ const MovieDetail = ({ currentUser }) => {
         </div>
 
       </div>
+
+      <div id="review-section">
+      {currentUser && reviews.some(r => r.user?._id === (currentUser._id || currentUser.id)) ? (() => {
+        const userReview = reviews.find(r => r.user?._id === (currentUser._id || currentUser.id));
+        return (
+          <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fdf0ee", border: "1px solid #ead6c3", marginTop: "2rem" }}>
+            <h3 style={{ margin: "0 0 8px 0", color: "var(--primary)" }}>You've Reviewed This Movie</h3>
+            <p className="admin-muted" style={{ margin: "0 0 16px 0" }}>You have already shared your thoughts on this movie.</p>
+            <button
+              onClick={() => {
+                toast((t) => (
+                  <div>
+                    <p style={{ margin: "0 0 10px 0", fontWeight: "600" }}>Are you sure you want to delete this review?</p>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <button onClick={() => toast.dismiss(t.id)} className="ghost-button" style={{ padding: "4px 12px", fontSize: "0.85rem", border: "1px solid #ced4da" }}>Cancel</button>
+                      <button 
+                        onClick={async () => {
+                          toast.dismiss(t.id);
+                          try {
+                            await api.delete(`/reviews/${userReview._id}`);
+                            toast.success("Review deleted successfully.");
+                            handleReviewDeleted(userReview._id);
+                          } catch (err) {
+                            toast.error("Failed to delete review.");
+                          }
+                        }} 
+                        className="primary-button" 
+                        style={{ background: "var(--danger)", padding: "4px 12px", fontSize: "0.85rem" }}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ), { duration: Infinity });
+              }}
+              className="ghost-button"
+              style={{ color: "var(--danger)", border: "1px solid var(--danger)", padding: "6px 16px", borderRadius: "20px" }}
+            >
+              Delete Review
+            </button>
+          </div>
+        );
+      })() : (
+        <ReviewForm
+          movieId={id}
+          onReviewAdded={handleReviewAdded}
+          currentUser={currentUser}
+          watchlistStatus={watchlistStatus}
+          episodesWatched={1}
+          movieStatus={movie.status}
+        />
+      )}
+      </div>
+      
+      <ReviewList
+        reviews={reviews}
+        currentUser={currentUser}
+        onReviewDeleted={handleReviewDeleted}
+        showMovie={false}
+      />
     </div>
   );
 };
