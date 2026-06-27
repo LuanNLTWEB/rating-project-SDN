@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../services/api";
 import ReviewList from "../components/Review/ReviewList";
+import { Search } from "lucide-react";
 
 const filterOptions = [
   { id: "recommended", label: "Recommended", color: "#0369a1", bg: "#e0f2fe", border: "#bae6fd" },
@@ -17,10 +18,15 @@ const Reviews = ({ currentUser }) => {
   const [selectedMovieId, setSelectedMovieId] = useState("");
   const [activeFilters, setActiveFilters] = useState([]);
   const [moviePage, setMoviePage] = useState(1);
+  const [movieSearch, setMovieSearch] = useState("");
+
+  const filteredAllMovies = movieSearch 
+    ? allMovies.filter(m => m.name.toLowerCase().includes(movieSearch.toLowerCase())) 
+    : allMovies;
 
   const moviesPerPage = 16;
-  const totalMoviePages = Math.ceil(allMovies.length / moviesPerPage) || 1;
-  const displayedMovies = allMovies.slice((moviePage - 1) * moviesPerPage, moviePage * moviesPerPage);
+  const totalMoviePages = Math.ceil(filteredAllMovies.length / moviesPerPage) || 1;
+  const displayedMovies = filteredAllMovies.slice((moviePage - 1) * moviesPerPage, moviePage * moviesPerPage);
 
   useEffect(() => {
     if (selectedMovieId) {
@@ -33,13 +39,17 @@ const Reviews = ({ currentUser }) => {
     }
   }, [selectedMovieId]);
 
+  useEffect(() => {
+    setMoviePage(1); // Reset page on search
+  }, [movieSearch]);
+
   const baseURL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [reviewsRes, moviesRes] = await Promise.all([
-          api.get("/reviews"),
+          api.get("/reviews?limit=1000"),
           api.get("/movies?limit=1000")
         ]);
         setReviews(reviewsRes.data.reviews || []);
@@ -92,11 +102,23 @@ const Reviews = ({ currentUser }) => {
       ) : (
         <>
           <div className="admin-card" style={{ padding: "24px", marginBottom: "2rem" }}>
-            <h3 style={{ marginTop: 0, color: "var(--ink)", borderBottom: "1px solid #ead6c3", paddingBottom: "12px", marginBottom: "16px" }}>
-              Select an Anime
-            </h3>
-            {allMovies.length === 0 ? (
-              <p className="admin-muted">No movies available yet.</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ead6c3", paddingBottom: "12px", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, color: "var(--ink)" }}>
+                Select an Anime
+              </h3>
+              <div style={{ position: "relative", width: "300px" }}>
+                <Search size={16} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
+                <input
+                  type="text"
+                  placeholder="Search anime..."
+                  value={movieSearch}
+                  onChange={(e) => setMovieSearch(e.target.value)}
+                  style={{ width: "100%", padding: "8px 12px 8px 34px", borderRadius: "8px", border: "1px solid #ced4da", fontSize: "0.9rem" }}
+                />
+              </div>
+            </div>
+            {filteredAllMovies.length === 0 ? (
+              <p className="admin-muted">{movieSearch ? "No anime matches your search." : "No movies available yet."}</p>
             ) : (
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: "16px" }}>

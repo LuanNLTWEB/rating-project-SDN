@@ -35,8 +35,9 @@ const ReviewItem = ({ review: initialReview, currentUser, onReviewDeleted, showM
   const [isEditing, setIsEditing] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
-  const canDelete = currentUser && (currentUserId === reviewUserId || ["admin", "staff"].includes(currentUser.role));
-  const canEdit = currentUser && currentUserId === reviewUserId && (!review.editHistory || review.editHistory.length < 3);
+  const isMuted = currentUser && currentUser.mutedUntil && new Date(currentUser.mutedUntil) > new Date();
+  const canDelete = currentUser && ((currentUserId === reviewUserId && !isMuted) || ["admin", "staff"].includes(currentUser.role));
+  const canEdit = currentUser && currentUserId === reviewUserId && !isMuted && (!review.editHistory || review.editHistory.length < 3);
 
   const handleReact = async (type) => {
     if (!currentUser) return toast.error("Please login to react.");

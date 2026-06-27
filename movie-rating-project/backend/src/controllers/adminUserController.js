@@ -182,7 +182,11 @@ const deleteUser = async (req, res) => {
 const muteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { days } = req.body;
+    const { days, reason } = req.body;
+
+    if (days > 0 && (!reason || !reason.trim())) {
+      return res.status(400).json({ message: "Mute reason is required" });
+    }
 
     const user = await User.findById(id);
     if (!user) {
@@ -196,15 +200,18 @@ const muteUser = async (req, res) => {
     if (!days || days <= 0) {
       // Unmute
       user.mutedUntil = null;
+      user.muteReason = null;
     } else if (days >= 999) {
       // Permanent
       const date = new Date();
       date.setFullYear(date.getFullYear() + 100);
       user.mutedUntil = date;
+      user.muteReason = reason.trim();
     } else {
       const date = new Date();
       date.setDate(date.getDate() + parseInt(days, 10));
       user.mutedUntil = date;
+      user.muteReason = reason.trim();
     }
 
     await user.save();
@@ -215,7 +222,7 @@ const muteUser = async (req, res) => {
       action: "user_muted",
       targetUserId: user._id,
       targetEmail: user.email,
-      details: { mutedUntil: user.mutedUntil },
+      details: { mutedUntil: user.mutedUntil, reason: user.muteReason },
     });
 
     return res.status(200).json({

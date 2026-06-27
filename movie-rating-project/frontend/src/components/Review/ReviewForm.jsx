@@ -94,9 +94,14 @@ const ReviewForm = ({ movieId, onReviewAdded, currentUser, watchlistStatus, epis
 
   if (currentUser && currentUser.mutedUntil && new Date(currentUser.mutedUntil) > new Date()) {
     return (
-      <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fef8f6", border: "1px dashed var(--danger)", marginTop: "2rem" }}>
+      <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fef8f6", border: "1px solid var(--danger)", marginTop: "2rem" }}>
         <h3 style={{ margin: "0 0 8px 0", color: "var(--danger)" }}>Account Restricted</h3>
-        <p className="admin-muted" style={{ margin: 0 }}>You have been muted by a staff member. You cannot post or edit reviews until {new Date(currentUser.mutedUntil).toLocaleString()}.</p>
+        <p className="admin-muted" style={{ margin: "0 0 8px 0" }}>
+          You have been muted by a staff member. You cannot post or edit reviews until <strong>{new Date(currentUser.mutedUntil).toLocaleString()}</strong>.
+        </p>
+        <p style={{ margin: 0, fontWeight: "600", color: "var(--danger)" }}>
+          Reason: {currentUser.muteReason || "Violation of rules"}
+        </p>
       </div>
     );
   }

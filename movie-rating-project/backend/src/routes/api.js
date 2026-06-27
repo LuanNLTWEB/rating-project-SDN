@@ -85,7 +85,7 @@ router.patch(
 	updateUserStatus
 );
 router.delete("/admin/users/:id", authenticate, requireAdmin, deleteUser);
-router.patch("/admin/users/:id/mute", authenticate, requireAdmin, muteUser);
+router.patch("/admin/users/:id/mute", authenticate, requireStaff, muteUser);
 
 router.get("/genres", listGenres);
 router.get("/staff/genres", authenticate, requireStaff, listGenres);

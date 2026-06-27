@@ -423,7 +423,17 @@ const MovieDetail = ({ currentUser }) => {
 
       {!isStaff && (
         <div id="review-section">
-      {currentUser && reviews.some(r => r.user?._id === (currentUser._id || currentUser.id)) ? (() => {
+      {currentUser && currentUser.mutedUntil && new Date(currentUser.mutedUntil) > new Date() ? (
+        <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fef8f6", border: "1px solid var(--danger)", marginTop: "2rem" }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "var(--danger)" }}>Account Restricted</h3>
+          <p className="admin-muted" style={{ margin: "0 0 8px 0" }}>
+            You have been muted by a staff member. You cannot post, edit, or delete reviews until <strong>{new Date(currentUser.mutedUntil).toLocaleString()}</strong>.
+          </p>
+          <p style={{ margin: 0, fontWeight: "600", color: "var(--danger)" }}>
+            Reason: {currentUser.muteReason || "Violation of rules"}
+          </p>
+        </div>
+      ) : currentUser && reviews.some(r => r.user?._id === (currentUser._id || currentUser.id)) ? (() => {
         const userReview = reviews.find(r => r.user?._id === (currentUser._id || currentUser.id));
         return (
           <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fdf0ee", border: "1px solid #ead6c3", marginTop: "2rem" }}>

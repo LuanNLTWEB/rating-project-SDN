@@ -11,11 +11,13 @@ const AdminReviews = ({ currentUser }) => {
   const [showMuteModal, setShowMuteModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [muteDays, setMuteDays] = useState(3);
+  const [muteReason, setMuteReason] = useState("");
+  const [confirmModal, setConfirmModal] = useState({ show: false, action: null, id: null, title: "", message: "" });
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (currentSearch) => {
     try {
       setLoading(true);
-      const res = await api.get(`/reviews?limit=50&search=${search}`);
+      const res = await api.get(`/reviews?limit=50&search=${encodeURIComponent(currentSearch)}`);
       setReviews(res.data.reviews || []);
     } catch (err) {
       toast.error("Failed to load reviews");
@@ -25,11 +27,23 @@ const AdminReviews = ({ currentUser }) => {
   };
 
   useEffect(() => {
-    fetchReviews();
+    const delayDebounceFn = setTimeout(() => {
+      fetchReviews(search);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) return;
+  const openDeleteConfirm = (id) => {
+    setConfirmModal({
+      show: true,
+      action: "delete",
+      id,
+      title: "Delete Review",
+      message: "Are you sure you want to completely delete this review? This action cannot be undone."
+    });
+  };
+
+  const executeDelete = async (id) => {
     try {
       await api.delete(`/reviews/${id}`);
       toast.success("Review deleted");
@@ -49,8 +63,17 @@ const AdminReviews = ({ currentUser }) => {
     }
   };
 
-  const handleForceSpoiler = async (id) => {
-    if (!window.confirm("Force this review to be hidden behind a spoiler tag?")) return;
+  const openSpoilerConfirm = (id) => {
+    setConfirmModal({
+      show: true,
+      action: "spoiler",
+      id,
+      title: "Force Spoiler",
+      message: "Force this review to be hidden behind a spoiler tag?"
+    });
+  };
+
+  const executeSpoiler = async (id) => {
     try {
       const res = await api.patch(`/staff/reviews/${id}/force-spoiler`, { containsSpoiler: true });
       toast.success("Spoiler tag applied");
@@ -60,13 +83,28 @@ const AdminReviews = ({ currentUser }) => {
     }
   };
 
+  const handleConfirm = () => {
+    const { action, id } = confirmModal;
+    setConfirmModal({ show: false, action: null, id: null, title: "", message: "" });
+    if (action === "delete") {
+      executeDelete(id);
+    } else if (action === "spoiler") {
+      executeSpoiler(id);
+    }
+  };
+
   const handleMuteUser = async () => {
+    if (muteDays > 0 && !muteReason.trim()) {
+      toast.error("Please provide a reason for muting the user.");
+      return;
+    }
     try {
-      const res = await api.patch(`/admin/users/${selectedUserId}/mute`, { days: muteDays });
+      const res = await api.patch(`/admin/users/${selectedUserId}/mute`, { days: muteDays, reason: muteReason });
       toast.success(res.data.message || "User muted");
       setShowMuteModal(false);
+      setMuteReason("");
       // Optional: refresh reviews to show muted status if populated
-      fetchReviews();
+      fetchReviews(search);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to mute user");
     }
@@ -111,7 +149,9 @@ const AdminReviews = ({ currentUser }) => {
                 <td style={{ padding: "16px" }}>
                   <div style={{ fontWeight: "600", color: "var(--ink)" }}>{r.user?.name || "Unknown"}</div>
                   {r.user?.mutedUntil && new Date(r.user.mutedUntil) > new Date() && (
-                    <span style={{ fontSize: "0.75rem", background: "var(--danger)", color: "#fff", padding: "2px 6px", borderRadius: "4px" }}>Muted</span>
+                    <div style={{ marginTop: "4px", fontSize: "0.75rem", background: "var(--danger)", color: "#fff", padding: "4px 8px", borderRadius: "4px", display: "inline-block" }}>
+                      Muted: {r.user.muteReason || "Violation of rules"}
+                    </div>
                   )}
                 </td>
                 <td style={{ padding: "16px" }}>
@@ -138,15 +178,15 @@ const AdminReviews = ({ currentUser }) => {
                     <button onClick={() => handlePin(r._id)} title="Toggle Pin" style={{ background: r.isPinned ? "#d97706" : "#fef3c7", color: r.isPinned ? "#fff" : "#d97706", border: "1px solid #fde68a", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Pin size={16} />
                     </button>
-                    <button onClick={() => handleForceSpoiler(r._id)} disabled={r.containsSpoiler} title="Force Spoiler" style={{ background: r.containsSpoiler ? "#f3f4f6" : "#fee2e2", color: r.containsSpoiler ? "#9ca3af" : "#b91c1c", border: "1px solid #fecaca", padding: "6px", borderRadius: "6px", cursor: r.containsSpoiler ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button onClick={() => openSpoilerConfirm(r._id)} disabled={r.containsSpoiler} title="Force Spoiler" style={{ background: r.containsSpoiler ? "#f3f4f6" : "#fee2e2", color: r.containsSpoiler ? "#9ca3af" : "#b91c1c", border: "1px solid #fecaca", padding: "6px", borderRadius: "6px", cursor: r.containsSpoiler ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <EyeOff size={16} />
                     </button>
-                    {r.user && currentUser?.role === "admin" && (
-                      <button onClick={() => { setSelectedUserId(r.user._id); setShowMuteModal(true); }} title="Mute User" style={{ background: "#f3e8ff", color: "#7e22ce", border: "1px solid #e9d5ff", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {r.user && ["admin", "staff"].includes(currentUser?.role) && (
+                      <button onClick={() => { setSelectedUserId(r.user._id); setShowMuteModal(true); setMuteReason(""); }} title="Mute User" style={{ background: "#f3e8ff", color: "#7e22ce", border: "1px solid #e9d5ff", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <ShieldAlert size={16} />
                       </button>
                     )}
-                    <button onClick={() => handleDelete(r._id)} title="Delete Review" style={{ background: "var(--danger)", color: "#fff", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button onClick={() => openDeleteConfirm(r._id)} title="Delete Review" style={{ background: "var(--danger)", color: "#fff", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -172,9 +212,35 @@ const AdminReviews = ({ currentUser }) => {
                 <option value={999}>Permanent</option>
               </select>
             </div>
+            
+            {muteDays > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontWeight: "600" }}>Reason for Muting</label>
+                <textarea 
+                  value={muteReason} 
+                  onChange={(e) => setMuteReason(e.target.value)} 
+                  placeholder="E.g., Spamming, offensive language..."
+                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ced4da", minHeight: "80px", resize: "vertical", fontFamily: "inherit" }}
+                />
+              </div>
+            )}
+            
             <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
               <button onClick={() => setShowMuteModal(false)} className="ghost-button" style={{ border: "1px solid #ced4da", padding: "8px 16px" }}>Cancel</button>
               <button onClick={handleMuteUser} className="primary-button" style={{ background: "var(--danger)", padding: "8px 16px" }}>Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmModal.show && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+          <div className="admin-card" style={{ padding: "24px", width: "400px" }}>
+            <h3 style={{ marginTop: 0, color: "var(--danger)" }}>{confirmModal.title}</h3>
+            <p style={{ fontSize: "0.95rem", color: "var(--ink)", marginBottom: "20px" }}>{confirmModal.message}</p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button onClick={() => setConfirmModal({ ...confirmModal, show: false })} className="ghost-button" style={{ border: "1px solid #ced4da", padding: "8px 16px" }}>Cancel</button>
+              <button onClick={handleConfirm} className="primary-button" style={{ background: "var(--danger)", padding: "8px 16px" }}>Confirm</button>
             </div>
           </div>
         </div>

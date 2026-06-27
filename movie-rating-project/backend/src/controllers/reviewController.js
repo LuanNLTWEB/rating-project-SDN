@@ -170,6 +170,7 @@ exports.getReviewsForMovie = async (req, res) => {
 };
 
 // React to a review
+// React to a review
 exports.reactToReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -197,7 +198,7 @@ exports.reactToReview = async (req, res) => {
     if (hasReacted) {
       // Remove reaction (unlike)
       review.reactions[type] = review.reactions[type].filter(
-        (id) => id.toString() !== userId.toString()
+        (uid) => uid.toString() !== userId.toString()
       );
       if (type === "helpful") review.helpfulnessScore -= 1;
     } else {
@@ -209,20 +210,6 @@ exports.reactToReview = async (req, res) => {
     await review.save();
 
     res.status(200).json({ success: true, review });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error: error.message });
-  }
-};
-
-// Get all reviews
-exports.getAllReviews = async (req, res) => {
-  try {
-    const reviews = await Review.find()
-      .populate("user", "name avatar")
-      .populate("movie", "name poster status")
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({ success: true, reviews });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
@@ -252,6 +239,54 @@ exports.forceSpoiler = async (req, res) => {
     if (!review) return res.status(404).json({ success: false, message: "Review not found" });
 
     res.status(200).json({ success: true, review });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Get all reviews globally (for dashboard)
+exports.getAllReviews = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 100);
+    const search = req.query.search || "";
+    const rating = req.query.rating;
+
+    const filter = {};
+    if (rating) filter.overallRating = parseInt(rating, 10);
+
+    const [reviews, total] = await Promise.all([
+      Review.find(filter)
+        .populate("user", "name email avatar role mutedUntil")
+        .populate("movie", "name poster status")
+        .sort({ createdAt: -1 }),
+      Review.countDocuments(filter),
+    ]);
+
+    let filteredReviews = reviews;
+    if (search) {
+      const lowerSearch = search.toLowerCase();
+      filteredReviews = reviews.filter(r => 
+        (r.user && r.user.name && r.user.name.toLowerCase().includes(lowerSearch)) || 
+        (r.movie && r.movie.name && r.movie.name.toLowerCase().includes(lowerSearch)) ||
+        (r.bodyText && r.bodyText.toLowerCase().includes(lowerSearch))
+      );
+    }
+
+    // Apply pagination in memory since we filter in memory
+    const startIndex = (page - 1) * limit;
+    const paginatedReviews = filteredReviews.slice(startIndex, startIndex + limit);
+
+    res.status(200).json({
+      success: true,
+      reviews: paginatedReviews,
+      pagination: {
+        page,
+        limit,
+        total: filteredReviews.length,
+        totalPages: Math.ceil(filteredReviews.length / limit) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
