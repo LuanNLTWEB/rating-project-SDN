@@ -159,6 +159,7 @@ const MovieDetail = ({ currentUser }) => {
   const ytId = getYouTubeId(movie.trailer);
 
   const watchlistLabel = statusOptions.find(o => o.value === watchlistStatus)?.label;
+  const isStaff = currentUser && ["staff", "admin"].includes(currentUser.role);
 
   return (
     <div className="admin-shell" style={{ padding: "20px 0" }}>
@@ -201,7 +202,8 @@ const MovieDetail = ({ currentUser }) => {
       </div>
 
       {/* Action Buttons below banner */}
-      <div style={{ display: "flex", gap: "10px", marginTop: "1rem", marginBottom: "1.5rem" }}>
+      {!isStaff && (
+        <div style={{ display: "flex", gap: "10px", marginTop: "1rem", marginBottom: "1.5rem" }}>
         <button
           onClick={handleToggleFavorite}
           className="primary-button"
@@ -247,6 +249,7 @@ const MovieDetail = ({ currentUser }) => {
           )}
         </div>
       </div>
+      )}
 
       {/* Main Content Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "2rem", marginTop: "2rem" }}>
@@ -418,7 +421,8 @@ const MovieDetail = ({ currentUser }) => {
 
       </div>
 
-      <div id="review-section">
+      {!isStaff && (
+        <div id="review-section">
       {currentUser && reviews.some(r => r.user?._id === (currentUser._id || currentUser.id)) ? (() => {
         const userReview = reviews.find(r => r.user?._id === (currentUser._id || currentUser.id));
         return (
@@ -469,6 +473,7 @@ const MovieDetail = ({ currentUser }) => {
         />
       )}
       </div>
+      )}
       
       <ReviewList
         reviews={reviews}

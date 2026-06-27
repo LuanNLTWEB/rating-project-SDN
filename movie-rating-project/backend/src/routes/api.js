@@ -6,6 +6,7 @@ const {
 	updateUserRole,
 	updateUserStatus,
 	deleteUser,
+	muteUser,
 } = require("../controllers/adminUserController");
 const { listAuditLogs } = require("../controllers/adminAuditController");
 const {
@@ -55,6 +56,8 @@ const {
 	getReviewsForMovie,
 	reactToReview,
 	getAllReviews,
+	forceSpoiler,
+	togglePin,
 } = require("../controllers/reviewController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
@@ -82,6 +85,7 @@ router.patch(
 	updateUserStatus
 );
 router.delete("/admin/users/:id", authenticate, requireAdmin, deleteUser);
+router.patch("/admin/users/:id/mute", authenticate, requireAdmin, muteUser);
 
 router.get("/genres", listGenres);
 router.get("/staff/genres", authenticate, requireStaff, listGenres);
@@ -151,5 +155,8 @@ router.post("/movies/:movieId/reviews", authenticate, createReview);
 router.put("/reviews/:id", authenticate, updateReview);
 router.delete("/reviews/:id", authenticate, deleteReview);
 router.post("/reviews/:id/react", authenticate, reactToReview);
+
+router.patch("/staff/reviews/:id/force-spoiler", authenticate, requireStaff, forceSpoiler);
+router.patch("/staff/reviews/:id/pin", authenticate, requireStaff, togglePin);
 
 module.exports = router;

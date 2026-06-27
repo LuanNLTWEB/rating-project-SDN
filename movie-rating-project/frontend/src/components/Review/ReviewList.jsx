@@ -180,6 +180,11 @@ const ReviewItem = ({ review: initialReview, currentUser, onReviewDeleted, showM
       ) : (
         <>
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px", flexWrap: "wrap", alignItems: "center" }}>
+        {review.isPinned && (
+          <span style={{ background: "#fef3c7", color: "#d97706", padding: "4px 10px", borderRadius: "6px", fontSize: "0.8rem", fontWeight: "700", border: "1px solid #fde68a", display: "flex", alignItems: "center", gap: "4px", textTransform: "uppercase" }}>
+            📌 Staff Pick
+          </span>
+        )}
         {review.recommendation === "recommended" && (
           <span style={{ background: "#e0f2fe", color: "#0369a1", padding: "4px 10px", borderRadius: "6px", fontSize: "0.8rem", fontWeight: "700", border: "1px solid #bae6fd", textTransform: "uppercase" }}>
             Recommended

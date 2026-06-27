@@ -35,6 +35,10 @@ const reviewSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
     reactions: {
       helpful: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       nice: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

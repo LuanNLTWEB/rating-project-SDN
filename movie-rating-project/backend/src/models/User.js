@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    mutedUntil: {
+      type: Date,
+      default: null,
+    },
     refreshTokenHash: {
       type: String,
       default: null,

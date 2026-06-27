@@ -14,6 +14,13 @@ exports.createReview = async (req, res) => {
     const { overallRating, bodyText, containsSpoiler, recommendation } = req.body;
     const userId = req.user._id;
 
+    if (req.user.mutedUntil && new Date(req.user.mutedUntil) > new Date()) {
+      return res.status(403).json({
+        success: false,
+        message: `You are banned from posting reviews until ${new Date(req.user.mutedUntil).toLocaleString()}`,
+      });
+    }
+
     // Character count validation (maximum 10000 characters)
     const charCount = getWordCount(bodyText);
     if (charCount > 10000) {
@@ -146,16 +153,15 @@ exports.deleteReview = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
-
-// Get reviews for a movie
+// Get reviews for a movie
 exports.getReviewsForMovie = async (req, res) => {
   try {
     const { movieId } = req.params;
     
-    // Sort by helpfulnessScore by default
+    // Sort by isPinned first, then helpfulnessScore
     const reviews = await Review.find({ movie: movieId })
-      .populate("user", "name avatar") // Assuming User has name and avatar
-      .sort({ helpfulnessScore: -1, createdAt: -1 });
+      .populate("user", "name avatar role") // Assuming User has name and avatar
+      .sort({ isPinned: -1, helpfulnessScore: -1, createdAt: -1 });
 
     res.status(200).json({ success: true, reviews });
   } catch (error) {
@@ -163,7 +169,7 @@ exports.getReviewsForMovie = async (req, res) => {
   }
 };
 
-// React to a review
+// React to a review
 exports.reactToReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -217,6 +223,35 @@ exports.getAllReviews = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Toggle pin status of a review (Admin/Staff only)
+exports.togglePin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await Review.findById(id);
+    if (!review) return res.status(404).json({ success: false, message: "Review not found" });
+
+    review.isPinned = !review.isPinned;
+    await review.save();
+    res.status(200).json({ success: true, isPinned: review.isPinned });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Force spoiler status (Admin/Staff only)
+exports.forceSpoiler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { containsSpoiler } = req.body;
+    const review = await Review.findByIdAndUpdate(id, { containsSpoiler }, { new: true });
+    if (!review) return res.status(404).json({ success: false, message: "Review not found" });
+
+    res.status(200).json({ success: true, review });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }

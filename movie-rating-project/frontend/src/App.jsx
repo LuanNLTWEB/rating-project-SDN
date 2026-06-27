@@ -19,6 +19,7 @@ import Trending from "./pages/Trending.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
+import AdminReviews from "./pages/AdminReviews.jsx";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
@@ -100,6 +101,7 @@ const App = () => {
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/admin/reviews">Manage Reviews</Link>
             <Link to="/reviews">Reviews</Link>
             <Link to="/favorites">Favorites</Link>
             <Link to="/watchlist">Watchlist</Link>
@@ -111,6 +113,7 @@ const App = () => {
             <Link to="/staff/movies">Movies</Link>
             <Link to="/staff/news">News CMS</Link>
             <Link to="/trending">Trending</Link>
+            <Link to="/admin/reviews">Manage Reviews</Link>
             <Link to="/reviews">Reviews</Link>
           </nav>
         ) : user?.role === "customer" ? (
@@ -145,6 +148,10 @@ const App = () => {
                 element={<AdminUsers currentUser={user} />}
               />
               <Route
+                path="/admin/reviews"
+                element={<AdminReviews currentUser={user} />}
+              />
+              <Route
                 path="/admin/genres"
                 element={<AdminGenres currentUser={user} />}
               />
@@ -170,6 +177,10 @@ const App = () => {
               <Route
                 path="/staff/genres"
                 element={<AdminGenres currentUser={user} />}
+              />
+              <Route
+                path="/admin/reviews"
+                element={<AdminReviews currentUser={user} />}
               />
               <Route
                 path="/staff/genres/create"

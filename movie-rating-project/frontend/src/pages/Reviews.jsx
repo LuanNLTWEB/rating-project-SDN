@@ -159,7 +159,7 @@ const Reviews = ({ currentUser }) => {
 
           {selectedMovieId && (
             <div id="reviews-container" className="admin-card" style={{ padding: "24px", marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "16px" }}>
-              {currentUser && !hasReviewed && (
+              {currentUser && !hasReviewed && !["staff", "admin"].includes(currentUser.role) && (
                 <div style={{ textAlign: "left", margin: "0 0 8px 0" }}>
                   <a href={`/movies/${selectedMovieId}#review-section`} style={{ fontSize: "0.9rem", color: "var(--primary)", textDecoration: "none", fontWeight: "500", transition: "opacity 0.2s" }} onMouseOver={e => e.currentTarget.style.opacity = 0.7} onMouseOut={e => e.currentTarget.style.opacity = 1}>
                     You haven't reviewed this anime yet. Click here to write a review.
