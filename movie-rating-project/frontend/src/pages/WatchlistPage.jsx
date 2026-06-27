@@ -6,9 +6,9 @@ import { Eye, Clock, CheckCircle, Trash2, Globe, Lock } from "lucide-react";
 import CustomSelect from "../components/CustomSelect.jsx";
 
 const statusOptions = [
-  { value: "watching", label: "Đang xem" },
-  { value: "will_watch", label: "Sẽ xem" },
-  { value: "completed", label: "Hoàn thành" },
+  { value: "watching", label: "Watching", color: "var(--primary)", bg: "#e0f2fe" },
+  { value: "will_watch", label: "Plan to Watch", color: "#4b5563", bg: "#f3f4f6" },
+  { value: "completed", label: "Completed", color: "#16a34a", bg: "#dcfce3" },
 ];
 
 const statusIcons = {

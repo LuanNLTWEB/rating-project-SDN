@@ -179,10 +179,73 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const muteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { days, reason } = req.body;
+
+    if (days > 0 && (!reason || !reason.trim())) {
+      return res.status(400).json({ message: "Mute reason is required" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Cannot mute an admin" });
+    }
+
+    if (!days || days <= 0) {
+      // Unmute
+      user.mutedUntil = null;
+      user.muteReason = null;
+    } else if (days >= 999) {
+      // Permanent
+      const date = new Date();
+      date.setFullYear(date.getFullYear() + 100);
+      user.mutedUntil = date;
+      user.muteReason = reason.trim();
+    } else {
+      const date = new Date();
+      date.setDate(date.getDate() + parseInt(days, 10));
+      user.mutedUntil = date;
+      user.muteReason = reason.trim();
+    }
+
+    await user.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: "user_muted",
+      targetUserId: user._id,
+      targetEmail: user.email,
+      details: { mutedUntil: user.mutedUntil, reason: user.muteReason },
+    });
+
+    return res.status(200).json({
+      message: user.mutedUntil ? `User muted until ${user.mutedUntil.toLocaleDateString()}` : "User unmuted",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        mutedUntil: user.mutedUntil,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   listUsers,
   getUserById,
   updateUserRole,
   updateUserStatus,
   deleteUser,
+  muteUser,
 };

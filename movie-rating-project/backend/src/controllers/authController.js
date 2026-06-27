@@ -123,6 +123,8 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        mutedUntil: user.mutedUntil,
+        muteReason: user.muteReason,
       },
     });
   } catch (error) {
@@ -175,6 +177,8 @@ const refresh = async (req, res) => {
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        mutedUntil: user.mutedUntil,
+        muteReason: user.muteReason,
       },
     });
   } catch (error) {

@@ -80,8 +80,8 @@ const Home = ({ status, currentUser }) => {
   return (
     <section>
       <div className="hero">
-        <h2>Welcome to AniMê</h2>
-        <p>Cuối cùng mới có một bộ anime mà nhân vật chính đúng chuẩn hình mẫu lý tưởng của tao. Một kẻ lạnh lùng và ít nói. Đám bạn không hiểu tại sao tao trở nên im lặng và luôn được 5 điểm bài kiểm tra. Chúng nó không biết năng lực thực sự của tao và không hề biết tao xuất chúng tới mức nào. Tao chẳng coi chúng là gì ngoài công cụ. Tao ước mình có thể vào trong thế giới anime và bộc lộ con người thực sự của mình. Tao tin chắc rằng tao chính là hoá thân ngoài đời thực của Ayanokoji Kyotaka.</p>
+        <h2>Chào mừng đến với AniMê</h2>
+        <p>Cuối cùng cũng có một bộ anime mà nhân vật chính là hình mẫu lý tưởng của tôi. Một kẻ lạnh lùng và ít nói. Bạn bè không hiểu tại sao tôi lại trở nên trầm mặc và luôn đạt điểm 5 trong các bài kiểm tra. Họ không biết năng lực thực sự của tôi và tôi thực sự xuất chúng như thế nào. Tôi coi họ không khác gì những công cụ. Tôi ước mình có thể bước vào thế giới anime và bộc lộ con người thật của mình. Tôi vững tin mình là hiện thân đời thực của Ayanokoji Kiyotaka.</p>
       </div>
 
       <div className="admin-card" style={{ marginTop: "2rem" }}>
