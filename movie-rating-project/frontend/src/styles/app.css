@@ -195,8 +195,26 @@ a:hover {
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
+.profile-button {
+   padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid #c9b39d;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-button:hover {
+   background: #f6e6d4;
+   color: #000000;
+  transform: translateY(-1px); 
+}
+
 .ghost-button:hover {
   background: #f6e6d4;
+  color: #000000;
   transform: translateY(-1px);
 }
 

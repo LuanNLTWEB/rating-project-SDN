@@ -1,5 +1,7 @@
 const express = require("express");
 const { register, login, refresh, logout } = require("../controllers/authController");
+const { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs, upload } = require("../controllers/profileController");
+
 const {
 	listUsers,
 	getUserById,
@@ -50,6 +52,11 @@ router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
 router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
 router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
 
-router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
+router.get("/profile", authenticate, getProfile);
+router.put("/profile/update", authenticate, updateProfile);
+router.put("/profile/change-password", authenticate, changePassword);
+router.post("/profile/upload-avatar", authenticate, uploadAvatar);
+router.get("/profile/audit-logs", authenticate, getMyAuditLogs);
+
 
 module.exports = router;

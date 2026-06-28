@@ -7,6 +7,7 @@ import Register from "./pages/Register.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 import AdminGenres from "./pages/AdminGenres.jsx";
+import Profile from "./pages/Profile.jsx";
 
 const App = () => {
   const [status, setStatus] = useState("Checking...");
@@ -60,7 +61,9 @@ const App = () => {
             )}
             {user && (
               <div className="user-meta">
-                <span>Hi, {user.name}</span>
+                <Link to="/profile" className="profile-button">
+                  {user.name}
+                </Link>
                 <button type="button" className="ghost-button" onClick={handleLogout}>
                   Log out
                 </button>
@@ -118,6 +121,7 @@ const App = () => {
               <Route path="/" element={<Home status={status} />} />
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
