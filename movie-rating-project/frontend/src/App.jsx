@@ -102,11 +102,6 @@ const App = () => {
           <nav className="nav-links nav-secondary">
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
-            <Link to="/trending">Trending</Link>
-            <Link to="/staff/reviews">Manage Reviews</Link>
-            <Link to="/reviews">Reviews</Link>
-            <Link to="/favorites">Favorites</Link>
-            <Link to="/watchlist">Watchlist</Link>
           </nav>
         ) : user?.role === "staff" ? (
           <nav className="nav-links nav-secondary">
@@ -143,27 +138,9 @@ const App = () => {
           {user?.role === "admin" ? (
             <>
               {publicRoutes}
-              <Route path="/favorites" element={<Favorites currentUser={user} />} />
-              <Route path="/watchlist" element={<WatchlistPage currentUser={user} />} />
               <Route
                 path="/admin/users"
                 element={<AdminUsers currentUser={user} />}
-              />
-              <Route
-                path="/staff/reviews"
-                element={<AdminReviews currentUser={user} />}
-              />
-              <Route
-                path="/admin/genres"
-                element={<AdminGenres currentUser={user} />}
-              />
-              <Route
-                path="/admin/genres/create"
-                element={<AdminGenreForm currentUser={user} />}
-              />
-              <Route
-                path="/admin/genres/edit/:id"
-                element={<AdminGenreForm currentUser={user} />}
               />
               <Route
                 path="/admin/audit"
