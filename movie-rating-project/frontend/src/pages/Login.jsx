@@ -58,6 +58,7 @@ const Login = ({ onLogin }) => {
           <button type="submit" className="primary-button">
             Login
           </button>
+          <Link to="/forgot-password" className="helper-link">Forgot password?</Link>
         </form>
         {message && <p className="status-success">{message}</p>}
         {error && <p className="status-error">{error}</p>}
@@ -66,10 +67,9 @@ const Login = ({ onLogin }) => {
         </p>
       </div>
       <aside className="auth-aside">
-        <img 
+        <img
           src={rateSmarter} 
           alt="Rate smarter dashboard" 
-          style={{ width: "65%", borderRadius: "8px", mixBlendMode: "lighten", display: "block", margin: "0 auto", objectFit: "cover" }}
         />
       </aside>
     </section>

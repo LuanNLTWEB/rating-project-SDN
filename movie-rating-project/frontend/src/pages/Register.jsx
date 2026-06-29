@@ -155,7 +155,6 @@ const Register = () => {
         <img 
           src={rateSmarter} 
           alt="Build your profile" 
-          style={{ width: "80%", borderRadius: "8px", mixBlendMode: "lighten" }}
         />
       </aside>
     </section>
