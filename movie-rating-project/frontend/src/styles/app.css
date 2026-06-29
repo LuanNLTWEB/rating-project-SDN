@@ -305,6 +305,19 @@ a:hover {
   color: var(--muted);
 }
 
+.helper-link {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--primary);
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
+
+.helper-link:hover {
+  text-decoration: underline;
+}
+
 .status-success {
   color: var(--success);
   font-weight: 600;
@@ -333,6 +346,15 @@ a:hover {
 
 .auth-aside p {
   color: #f6d8ba;
+}
+
+.auth-aside img {
+  width: 65%;
+  border-radius: 8px;
+  mix-blend-mode: lighten;
+  display: block;
+  margin: 0 auto;
+  object-fit: cover;
 }
 
 .admin-shell {

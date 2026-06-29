@@ -4,6 +4,8 @@ import { api, clearSession } from "./services/api";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 import AdminGenres from "./pages/AdminGenres.jsx";
@@ -228,6 +230,8 @@ const App = () => {
               {publicRoutes}
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}

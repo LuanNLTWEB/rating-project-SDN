@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, refresh, logout } = require("../controllers/authController");
+const { register, login, refresh, logout, forgotPassword, resetPassword } = require("../controllers/authController");
 const {
 	listUsers,
 	getUserById,
@@ -68,6 +68,8 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh", refresh);
 router.post("/logout", logout);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 router.get("/admin/users", authenticate, requireAdmin, listUsers);
 router.get("/admin/users/:id", authenticate, requireAdmin, getUserById);
@@ -94,8 +96,6 @@ router.post("/staff/genres", authenticate, requireStaff, createGenre);
 router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
 router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
 router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
-
-router.get("/admin/audit-logs", authenticate, requireAdmin, listAuditLogs);
 
 router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);
