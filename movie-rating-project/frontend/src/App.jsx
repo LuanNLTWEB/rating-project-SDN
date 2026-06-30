@@ -70,6 +70,7 @@ const App = () => {
       <Route path="/news" element={<NewsList />} />
       <Route path="/news/:id" element={<NewsDetail />} />
       <Route path="/reviews" element={<Reviews currentUser={user} />} />
+      <Route path="/profile" element={<Profile />} />
     </>
   );
 
@@ -210,7 +211,6 @@ const App = () => {
               {publicRoutes}
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/profile" element={<Profile />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="*" element={<Navigate to="/" replace />} />
