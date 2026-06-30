@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import CustomSelect from "../components/CustomSelect.jsx";
@@ -8,7 +8,7 @@ const seasons = ["Spring", "Summer", "Fall", "Winter"];
 const Home = ({ status, currentUser }) => {
   const [genres, setGenres] = useState([]);
   const [movieName, setMovieName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState("");
   const [seasonYear, setSeasonYear] = useState("");
 
@@ -16,6 +16,9 @@ const Home = ({ status, currentUser }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [moviesLoading, setMoviesLoading] = useState(false);
+
+  const [genreDropdownOpen, setGenreDropdownOpen] = useState(false);
+  const genreRef = useRef(null);
 
   useEffect(() => {
     const fetchGenres = async () => {
@@ -33,8 +36,18 @@ const Home = ({ status, currentUser }) => {
   }, []);
 
   useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (genreRef.current && !genreRef.current.contains(e.target)) {
+        setGenreDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     setPage(1);
-  }, [movieName, selectedCategory, selectedSeason, seasonYear]);
+  }, [movieName, selectedGenres, selectedSeason, seasonYear]);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -44,9 +57,9 @@ const Home = ({ status, currentUser }) => {
           page,
           limit: 8,
           search: movieName,
-          genre: selectedCategory,
+          ...(selectedGenres.length > 0 ? { genre: selectedGenres.join(",") } : {}),
           season: selectedSeason,
-          year: seasonYear,
+          ...(seasonYear ? { year: seasonYear } : {}),
         };
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/movies`,
@@ -61,12 +74,7 @@ const Home = ({ status, currentUser }) => {
       }
     };
     fetchMovies();
-  }, [movieName, selectedCategory, selectedSeason, seasonYear, page]);
-
-  const filteredGenres = useMemo(() => {
-    if (!selectedCategory) return genres;
-    return genres.filter((g) => g._id === selectedCategory);
-  }, [genres, selectedCategory]);
+  }, [movieName, selectedGenres, selectedSeason, seasonYear, page]);
 
   const yearOptions = useMemo(() => {
     const current = new Date().getFullYear();
@@ -76,6 +84,33 @@ const Home = ({ status, currentUser }) => {
     }
     return years;
   }, []);
+
+  const toggleGenre = (id) => {
+    setSelectedGenres((prev) =>
+      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
+    );
+  };
+
+  const resetGenres = () => {
+    setSelectedGenres([]);
+  };
+
+  const resetFilters = () => {
+    setMovieName("");
+    setSelectedGenres([]);
+    setSelectedSeason("");
+    setSeasonYear("");
+    setPage(1);
+  };
+
+  const genreLabel = useMemo(() => {
+    if (selectedGenres.length === 0) return "All";
+    if (selectedGenres.length === 1) {
+      const g = genres.find((g) => g._id === selectedGenres[0]);
+      return g ? g.name : "All";
+    }
+    return `${selectedGenres.length} genres`;
+  }, [selectedGenres, genres]);
 
   return (
     <section>
@@ -114,14 +149,92 @@ const Home = ({ status, currentUser }) => {
             />
           </div>
 
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Genre:</span>
-            <CustomSelect
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-              options={[{ value: "", label: "All" }, ...genres.map(g => ({ value: g._id, label: g.name }))]}
-              placeholder="All"
-            />
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }} ref={genreRef}>
+            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Movie Genres:</span>
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setGenreDropdownOpen(!genreDropdownOpen)}
+                style={{ minWidth: "120px", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}
+              >
+                <span>{genreLabel}</span>
+                <span style={{ fontSize: "0.7rem" }}>{genreDropdownOpen ? "▲" : "▼"}</span>
+              </button>
+              {genreDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    minWidth: "220px",
+                    maxHeight: "260px",
+                    overflowY: "auto",
+                    background: "#fffaf3",
+                    border: "1px solid #d8c6b3",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    zIndex: 20,
+                    padding: "0.5rem",
+                    marginTop: "4px",
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.4rem 0.5rem",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontWeight: selectedGenres.length === 0 ? 700 : 400,
+                      background: selectedGenres.length === 0 ? "#f0e6dc" : "transparent",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedGenres.length === 0}
+                      onChange={resetGenres}
+                      style={{ accentColor: "var(--primary)" }}
+                    />
+                    All
+                  </label>
+                  {genres.map((g) => (
+                    <label
+                      key={g._id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        padding: "0.4rem 0.5rem",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: selectedGenres.includes(g._id) ? 600 : 400,
+                        background: selectedGenres.includes(g._id) ? "#f0e6dc" : "transparent",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedGenres.includes(g._id)}
+                        onChange={() => toggleGenre(g._id)}
+                        style={{ accentColor: "var(--primary)" }}
+                      />
+                      {g.name}
+                    </label>
+                  ))}
+                  {selectedGenres.length > 0 && (
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      onClick={resetGenres}
+                      style={{ width: "100%", marginTop: "0.25rem", fontSize: "0.85rem" }}
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
@@ -156,11 +269,13 @@ const Home = ({ status, currentUser }) => {
           </div>
         </div>
 
-        {(movieName || selectedSeason) && (
+        {(movieName || selectedSeason || selectedGenres.length > 0) && (
           <p className="admin-subtitle" style={{ marginTop: "1rem", marginBottom: 0 }}>
             {movieName && `Title: "${movieName}"`}
-            {movieName && selectedSeason && " | "}
-            {selectedSeason && `Season: ${selectedSeason} ${seasonYear}`}
+            {movieName && (selectedSeason || selectedGenres.length > 0) && " | "}
+            {selectedGenres.length > 0 && `Genres: ${selectedGenres.length}`}
+            {selectedGenres.length > 0 && selectedSeason && " | "}
+            {selectedSeason && `Season: ${selectedSeason}${seasonYear ? ` ${seasonYear}` : ""}`}
           </p>
         )}
 
@@ -172,38 +287,12 @@ const Home = ({ status, currentUser }) => {
           }}
         />
 
-        <h4 style={{ margin: "0 0 0.75rem" }}>Movie Genres</h4>
-
-        {filteredGenres.length === 0 ? (
-          <p className="admin-muted">Loading genres...</p>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.75rem",
-            }}
-          >
-            {filteredGenres.map((genre) => (
-              <span
-                key={genre._id}
-                className="role-badge status-active"
-                style={{
-                  fontSize: "0.95rem",
-                  padding: "0.4rem 1rem",
-                  cursor: "pointer",
-                }}
-                onClick={() =>
-                  setSelectedCategory(
-                    selectedCategory === genre._id ? "" : genre._id
-                  )
-                }
-              >
-                {genre.name}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Filter Actions */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" className="ghost-button" onClick={resetFilters}>
+            Reset Filters
+          </button>
+        </div>
       </div>
 
       {/* Movies Grid */}
