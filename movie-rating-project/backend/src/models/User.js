@@ -55,6 +55,13 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    dateOfBirth: {
+      type: Date,
+      required: true,
+    },
+    avatar: {
+      type: String,
+      default: "",
     resetPasswordToken: {
       type: String,
       default: null,

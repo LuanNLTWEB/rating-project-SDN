@@ -97,6 +97,12 @@ router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
 router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
 router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
 
+router.get("/profile", authenticate, getProfile);
+router.put("/profile/update", authenticate, updateProfile);
+router.put("/profile/change-password", authenticate, changePassword);
+router.post("/profile/upload-avatar", authenticate, uploadAvatar);
+router.get("/profile/audit-logs", authenticate, getMyAuditLogs);
+
 router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);
 router.get("/movies/:id", getMovieById);

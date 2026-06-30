@@ -62,4 +62,48 @@ api.interceptors.response.use(
   }
 );
 
-export { api, clearSession };
+const getProfile = async () => {
+  const response = await api.get("/profile");
+  return response.data; 
+};
+const updateProfile = async (formData) => {
+  const response = await api.put("/profile/update", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+  return response.data; 
+};
+
+const changePassword = async (passwordData) => {
+  const response = await api.put("/profile/change-password", passwordData);
+  return response.data;
+};
+
+
+
+// US09: Hàm gọi API tải ảnh đại diện lên
+const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append("avatar", file); 
+  const response = await api.post("/profile/upload-avatar", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data" 
+    }
+  });
+  return response.data;
+};
+
+
+// US10: Hàm gọi API lấy lịch sử hoạt động cá nhân
+const getMyAuditLogs = async () => {
+  const response = await api.get("/profile/audit-logs");
+  return response.data; 
+};
+
+export { api, clearSession, getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs };
+
+
+
+
+
