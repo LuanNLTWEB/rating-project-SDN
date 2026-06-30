@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
-import { Heart, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const Favorites = ({ currentUser }) => {
   const [favorites, setFavorites] = useState([]);
@@ -44,10 +44,7 @@ const Favorites = ({ currentUser }) => {
   return (
     <div className="admin-shell">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-        <h2 style={{ margin: 0, color: "var(--primary)" }}>
-          <Heart size={20} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-          Danh sách yêu thích
-        </h2>
+        <h2 style={{ margin: 0, color: "var(--primary)" }}>Favorites</h2>
         <span className="role-badge" style={{ background: "#f5e4d3", color: "var(--primary)", fontWeight: "600" }}>
           {favorites.length} movies
         </span>
@@ -57,7 +54,7 @@ const Favorites = ({ currentUser }) => {
         <div className="admin-card" style={{ padding: "2rem", textAlign: "center" }}>
           <p className="admin-muted">No favorites yet. Browse movies and add some!</p>
           <Link to="/trending" className="primary-button" style={{ marginTop: "1rem", display: "inline-block" }}>
-            Browse Trending
+            Trending
           </Link>
         </div>
       ) : (

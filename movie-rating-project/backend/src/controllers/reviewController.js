@@ -2,6 +2,16 @@ const Review = require("../models/Review");
 const Movie = require("../models/Movie");
 const Watchlist = require("../models/Watchlist");
 
+// Helper to update movie average rating and review count
+const updateMovieRating = async (movieId) => {
+  const stats = await Review.aggregate([
+    { $match: { movie: movieId } },
+    { $group: { _id: null, avgRating: { $avg: "$overallRating" }, count: { $sum: 1 } } },
+  ]);
+  const avg = stats.length > 0 ? Math.round(stats[0].avgRating * 10) / 10 : 0;
+  await Movie.findByIdAndUpdate(movieId, { averageRating: avg, reviewCount: stats.length > 0 ? stats[0].count : 0 });
+};
+
 // Helper to calculate character count
 const getWordCount = (text) => {
   return text.trim().length;
@@ -69,6 +79,7 @@ exports.createReview = async (req, res) => {
       recommendation,
     });
 
+    await updateMovieRating(movieId);
     res.status(201).json({ success: true, review });
   } catch (error) {
     if (error.code === 11000) {
@@ -123,6 +134,7 @@ exports.updateReview = async (req, res) => {
 
     await review.save();
 
+    await updateMovieRating(review.movie);
     res.status(200).json({ success: true, review });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
@@ -146,8 +158,10 @@ exports.deleteReview = async (req, res) => {
       return res.status(403).json({ success: false, message: "You do not have permission to delete this review." });
     }
 
+    const movieId = review.movie;
     await review.deleteOne();
 
+    await updateMovieRating(movieId);
     res.status(200).json({ success: true, message: "Review deleted successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });

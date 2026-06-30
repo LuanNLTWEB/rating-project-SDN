@@ -292,9 +292,41 @@ const deleteMovie = async (req, res) => {
 const getTrendingMovies = async (req, res) => {
   try {
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
-    const movies = await Movie.find({ isActive: true })
+    const filter = { isActive: true };
+
+    if (req.query.year) {
+      const year = parseInt(req.query.year, 10);
+      if (req.query.season) {
+        let startMonth, endMonth, startYear = year, endYear = year;
+        if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
+        else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
+        else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
+        else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
+        if (startMonth !== undefined) {
+          filter.releaseDate = {
+            $gte: new Date(startYear, startMonth, 1),
+            $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
+          };
+        }
+      } else {
+        filter.releaseDate = {
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31, 23, 59, 59)
+        };
+      }
+    }
+
+    let sort;
+    switch (req.query.sort) {
+      case "newest": sort = { createdAt: -1 }; break;
+      case "rating": sort = { averageRating: -1, reviewCount: -1, createdAt: -1 }; break;
+      case "comments": sort = { reviewCount: -1, averageRating: -1, createdAt: -1 }; break;
+      default: sort = { viewCount: -1, createdAt: -1 };
+    }
+
+    const movies = await Movie.find(filter)
       .populate("genres", "name")
-      .sort({ viewCount: -1, createdAt: -1 })
+      .sort(sort)
       .limit(limit)
       .lean();
     return res.status(200).json({ movies });

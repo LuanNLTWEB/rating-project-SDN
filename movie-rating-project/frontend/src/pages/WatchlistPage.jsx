@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
-import { Eye, Clock, CheckCircle, Trash2, Globe, Lock } from "lucide-react";
+import { Trash2, Globe, Lock } from "lucide-react";
 import CustomSelect from "../components/CustomSelect.jsx";
 
 const statusOptions = [
@@ -10,12 +10,6 @@ const statusOptions = [
   { value: "will_watch", label: "Plan to Watch", color: "#4b5563", bg: "#f3f4f6" },
   { value: "completed", label: "Completed", color: "#16a34a", bg: "#dcfce3" },
 ];
-
-const statusIcons = {
-  watching: <Eye size={16} />,
-  will_watch: <Clock size={16} />,
-  completed: <CheckCircle size={16} />,
-};
 
 const statusColors = {
   watching: { bg: "#fff3cd", color: "#856404" },
@@ -97,10 +91,7 @@ const WatchlistPage = ({ currentUser }) => {
   return (
     <div className="admin-shell">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
-        <h2 style={{ margin: 0, color: "var(--primary)" }}>
-          <Eye size={20} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-          Danh sách cần xem
-        </h2>
+        <h2 style={{ margin: 0, color: "var(--primary)" }}>Watchlist</h2>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <CustomSelect
             value={filterStatus}
@@ -122,7 +113,7 @@ const WatchlistPage = ({ currentUser }) => {
         <div className="admin-card" style={{ padding: "2rem", textAlign: "center" }}>
           <p className="admin-muted">Your watchlist is empty. Browse movies to add some!</p>
           <Link to="/trending" className="primary-button" style={{ marginTop: "1rem", display: "inline-block" }}>
-            Browse Trending
+            Trending
           </Link>
         </div>
       ) : (
@@ -153,7 +144,7 @@ const WatchlistPage = ({ currentUser }) => {
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                       <span style={{ background: sc.bg, color: sc.color, padding: "2px 8px", borderRadius: "4px", fontSize: "0.75rem", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        {statusIcons[item.status]} {statusOptions.find(o => o.value === item.status)?.label}
+{statusOptions.find(o => o.value === item.status)?.label}
                       </span>
                       <button
                         onClick={() => handleTogglePrivacy(item.movie?._id)}

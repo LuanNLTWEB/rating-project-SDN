@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import CustomSelect from "../components/CustomSelect.jsx";
 
 const rankColors = [
   { bg: "#FFD700", color: "#1d1a17", label: "#1" },
@@ -8,17 +9,23 @@ const rankColors = [
   { bg: "#CD7F32", color: "#fff", label: "#3" },
 ];
 
-const Trending = ({ currentUser }) => {
+const sortOptions = [
+  { value: "trending", label: "Trending" },
+  { value: "rating", label: "Top Rated" },
+  { value: "comments", label: "Most Comments" },
+];
+
+const Trending = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState("trending");
 
   useEffect(() => {
     const fetchTrending = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, {
-          params: { limit: 20 },
-        });
+        const params = { limit: 20, sort: sortBy };
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, { params });
         setMovies(res.data.movies || []);
       } catch {
         // silently fail
@@ -27,12 +34,29 @@ const Trending = ({ currentUser }) => {
       }
     };
     fetchTrending();
-  }, []);
+  }, [sortBy]);
+
+  const renderMeta = (movie) => {
+    switch (sortBy) {
+      case "rating":
+        return movie.averageRating > 0
+          ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
+          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No rating</span>;
+      case "comments":
+        return movie.reviewCount > 0
+          ? <span style={{ fontWeight: "600" }}>{movie.reviewCount} comments</span>
+          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No comments</span>;
+      default:
+        return movie.viewCount > 0
+          ? <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>
+          : null;
+    }
+  };
 
   if (loading) {
     return (
       <div className="admin-shell" style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
-        <p className="admin-muted">Loading trending movies...</p>
+        <p className="admin-muted">Loading trending...</p>
       </div>
     );
   }
@@ -42,13 +66,26 @@ const Trending = ({ currentUser }) => {
 
   return (
     <div className="admin-shell">
+      {/* Sort */}
+      <div className="admin-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
+          <CustomSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="Sort"
+            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "130px" }}
+          />
+        </div>
+      </div>
+
       {movies.length === 0 ? (
         <div className="admin-card" style={{ padding: "3rem", textAlign: "center", borderRadius: "16px" }}>
-          <p className="admin-muted" style={{ fontSize: "1.1rem" }}>No trending movies available.</p>
+          <p className="admin-muted" style={{ fontSize: "1.1rem" }}>No movies found.</p>
         </div>
       ) : (
         <>
-          {/* Top 3 - Bigger cards */}
+          {/* Top 3 */}
           {top3.length > 0 && (
             <div style={{ marginBottom: "2.5rem" }}>
               <h3 style={{ margin: "0 0 1rem 0", color: "var(--primary)", borderBottom: "2px solid var(--primary)", paddingBottom: "0.5rem" }}>
@@ -66,12 +103,10 @@ const Trending = ({ currentUser }) => {
                       <div
                         className="admin-card"
                         style={{
-                          overflow: "hidden",
-                          borderRadius: "16px",
+                          overflow: "hidden", borderRadius: "16px",
                           border: index === 0 ? "2px solid #FFD700" : "1px solid #ead6c3",
                           transition: "transform 0.25s, box-shadow 0.25s",
-                          cursor: "pointer",
-                          height: "100%",
+                          cursor: "pointer", height: "100%",
                         }}
                         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.12)"; }}
                         onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -90,20 +125,11 @@ const Trending = ({ currentUser }) => {
                           )}
                           <div
                             style={{
-                              position: "absolute",
-                              top: "8px",
-                              left: "8px",
-                              background: rank.bg,
-                              color: rank.color,
-                              width: "34px",
-                              height: "34px",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: "bold",
-                              fontSize: "1rem",
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                              position: "absolute", top: "8px", left: "8px",
+                              background: rank.bg, color: rank.color,
+                              width: "34px", height: "34px", borderRadius: "50%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontWeight: "bold", fontSize: "1rem", boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                             }}
                           >
                             {rank.label}
@@ -123,9 +149,7 @@ const Trending = ({ currentUser }) => {
                           )}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", color: "var(--muted)" }}>
                             <span>{new Date(movie.releaseDate).toLocaleDateString()}</span>
-                            {movie.viewCount > 0 && (
-                              <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>
-                            )}
+                            {renderMeta(movie)}
                           </div>
                         </div>
                       </div>
@@ -136,11 +160,11 @@ const Trending = ({ currentUser }) => {
             </div>
           )}
 
-          {/* Rest - Grid */}
+          {/* Rest */}
           {rest.length > 0 && (
             <div>
               <h3 style={{ margin: "0 0 1rem 0", color: "var(--primary)", borderBottom: "2px solid var(--primary)", paddingBottom: "0.5rem" }}>
-                Xem nhiều
+                All Movies
               </h3>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.25rem" }}>
                 {rest.map((movie, index) => (
@@ -152,12 +176,8 @@ const Trending = ({ currentUser }) => {
                     <div
                       className="admin-card"
                       style={{
-                        overflow: "hidden",
-                        borderRadius: "12px",
-                        border: "1px solid #ead6c3",
-                        transition: "transform 0.2s, box-shadow 0.2s",
-                        cursor: "pointer",
-                        height: "100%",
+                        overflow: "hidden", borderRadius: "12px", border: "1px solid #ead6c3",
+                        transition: "transform 0.2s, box-shadow 0.2s", cursor: "pointer", height: "100%",
                       }}
                       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.1)"; }}
                       onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -183,11 +203,9 @@ const Trending = ({ currentUser }) => {
                       </div>
                       <div style={{ padding: "10px" }}>
                         <h4 style={{ margin: "0 0 4px 0", fontSize: "0.9rem", fontWeight: "600", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.3" }}>{movie.name}</h4>
-                        {movie.viewCount > 0 && (
-                          <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--muted)" }}>
-                            {movie.viewCount.toLocaleString()} views
-                          </p>
-                        )}
+                        <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "4px" }}>
+                          {renderMeta(movie)}
+                        </div>
                       </div>
                     </div>
                   </Link>
