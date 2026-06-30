@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import CustomSelect from "../components/CustomSelect.jsx";
 
 const rankColors = [
   { bg: "#FFD700", color: "#1d1a17", label: "#1" },
@@ -66,16 +65,29 @@ const Trending = () => {
 
   return (
     <div className="admin-shell">
-      {/* Sort */}
-      <div className="admin-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
-          <CustomSelect
-            value={sortBy}
-            onChange={setSortBy}
-            options={sortOptions}
-            placeholder="Sort"
-            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "130px" }}
-          />
+      {/* Sort tabs */}
+      <div className="admin-card" style={{ padding: "0.75rem 1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+          {sortOptions.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setSortBy(opt.value)}
+              style={{
+                padding: "0.5rem 1.25rem",
+                fontSize: "0.85rem",
+                fontWeight: sortBy === opt.value ? "600" : "400",
+                background: sortBy === opt.value ? "var(--primary)" : "transparent",
+                color: sortBy === opt.value ? "#fff" : "var(--ink)",
+                border: sortBy === opt.value ? "1px solid var(--primary)" : "1px solid #c9b39d",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
