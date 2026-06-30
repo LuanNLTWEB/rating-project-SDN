@@ -46,7 +46,7 @@ const Favorites = ({ currentUser }) => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <h2 style={{ margin: 0, color: "var(--primary)" }}>
           <Heart size={20} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-          Danh sách yêu thích
+          Favorites
         </h2>
         <span className="role-badge" style={{ background: "#f5e4d3", color: "var(--primary)", fontWeight: "600" }}>
           {favorites.length} movies
@@ -57,7 +57,7 @@ const Favorites = ({ currentUser }) => {
         <div className="admin-card" style={{ padding: "2rem", textAlign: "center" }}>
           <p className="admin-muted">No favorites yet. Browse movies and add some!</p>
           <Link to="/trending" className="primary-button" style={{ marginTop: "1rem", display: "inline-block" }}>
-            Browse Trending
+            Trending
           </Link>
         </div>
       ) : (

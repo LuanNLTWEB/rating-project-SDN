@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import CustomSelect from "../components/CustomSelect.jsx";
+
+const seasons = ["Spring", "Summer", "Fall", "Winter"];
+const currentYear = new Date().getFullYear();
 
 const rankColors = [
   { bg: "#FFD700", color: "#1d1a17", label: "#1" },
@@ -8,17 +12,34 @@ const rankColors = [
   { bg: "#CD7F32", color: "#fff", label: "#3" },
 ];
 
+const sortOptions = [
+  { value: "trending", label: "Trending" },
+  { value: "newest", label: "Newest" },
+];
+
 const Trending = ({ currentUser }) => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSeason, setSelectedSeason] = useState("");
+  const [seasonYear, setSeasonYear] = useState("");
+  const [sortBy, setSortBy] = useState("trending");
+
+  const yearOptions = useMemo(() => {
+    const years = [];
+    for (let y = currentYear + 1; y >= 1990; y--) {
+      years.push({ value: y.toString(), label: y.toString() });
+    }
+    return years;
+  }, []);
 
   useEffect(() => {
     const fetchTrending = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, {
-          params: { limit: 20 },
-        });
+        const params = { limit: 20, sort: sortBy };
+        if (selectedSeason) params.season = selectedSeason;
+        if (seasonYear) params.year = seasonYear;
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, { params });
         setMovies(res.data.movies || []);
       } catch {
         // silently fail
@@ -27,12 +48,12 @@ const Trending = ({ currentUser }) => {
       }
     };
     fetchTrending();
-  }, []);
+  }, [selectedSeason, seasonYear, sortBy]);
 
   if (loading) {
     return (
       <div className="admin-shell" style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
-        <p className="admin-muted">Loading trending movies...</p>
+        <p className="admin-muted">Loading trending...</p>
       </div>
     );
   }
@@ -42,14 +63,70 @@ const Trending = ({ currentUser }) => {
 
   return (
     <div className="admin-shell">
+      {/* Filters */}
+      <div className="admin-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="ghost-button"
+              style={{
+                background: !selectedSeason ? "var(--primary)" : "transparent",
+                color: !selectedSeason ? "#fff" : "var(--ink)",
+                border: !selectedSeason ? "1px solid var(--primary)" : "1px solid #c9b39d",
+              }}
+              onClick={() => { setSelectedSeason(""); setSeasonYear(""); }}
+            >
+              All
+            </button>
+            {seasons.map(s => (
+              <button
+                key={s}
+                type="button"
+                className="ghost-button"
+                style={{
+                  background: selectedSeason === s ? "var(--primary)" : "transparent",
+                  color: selectedSeason === s ? "#fff" : "var(--ink)",
+                  border: selectedSeason === s ? "1px solid var(--primary)" : "1px solid #c9b39d",
+                }}
+                onClick={() => setSelectedSeason(selectedSeason === s ? "" : s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <CustomSelect
+            value={seasonYear}
+            onChange={setSeasonYear}
+            options={[{ value: "", label: "All Years" }, ...yearOptions]}
+            placeholder="Year"
+            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "100px" }}
+          />
+          <CustomSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="Sort"
+            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "120px" }}
+          />
+        </div>
+      </div>
+
       {movies.length === 0 ? (
         <div className="admin-card" style={{ padding: "3rem", textAlign: "center", borderRadius: "16px" }}>
-          <p className="admin-muted" style={{ fontSize: "1.1rem" }}>No trending movies available.</p>
+          <p className="admin-muted" style={{ fontSize: "1.1rem" }}>No movies found.</p>
         </div>
       ) : (
         <>
-          {/* Top 3 - Bigger cards */}
-          {top3.length > 0 && (
+          {/* Season header */}
+          {selectedSeason && seasonYear && (
+            <h3 style={{ margin: "0 0 1.25rem 0", color: "var(--primary)" }}>
+              {selectedSeason} {seasonYear}
+            </h3>
+          )}
+
+          {/* Top 3 */}
+          {top3.length > 0 && !selectedSeason && !seasonYear && (
             <div style={{ marginBottom: "2.5rem" }}>
               <h3 style={{ margin: "0 0 1rem 0", color: "var(--primary)", borderBottom: "2px solid var(--primary)", paddingBottom: "0.5rem" }}>
                 Top 3
@@ -90,20 +167,11 @@ const Trending = ({ currentUser }) => {
                           )}
                           <div
                             style={{
-                              position: "absolute",
-                              top: "8px",
-                              left: "8px",
-                              background: rank.bg,
-                              color: rank.color,
-                              width: "34px",
-                              height: "34px",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: "bold",
-                              fontSize: "1rem",
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                              position: "absolute", top: "8px", left: "8px",
+                              background: rank.bg, color: rank.color,
+                              width: "34px", height: "34px", borderRadius: "50%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontWeight: "bold", fontSize: "1rem", boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                             }}
                           >
                             {rank.label}
@@ -136,11 +204,11 @@ const Trending = ({ currentUser }) => {
             </div>
           )}
 
-          {/* Rest - Grid */}
+          {/* Rest */}
           {rest.length > 0 && (
             <div>
               <h3 style={{ margin: "0 0 1rem 0", color: "var(--primary)", borderBottom: "2px solid var(--primary)", paddingBottom: "0.5rem" }}>
-                Xem nhiều
+                {!selectedSeason && !seasonYear ? "Most Viewed" : "Results"}
               </h3>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.25rem" }}>
                 {rest.map((movie, index) => (
@@ -152,12 +220,8 @@ const Trending = ({ currentUser }) => {
                     <div
                       className="admin-card"
                       style={{
-                        overflow: "hidden",
-                        borderRadius: "12px",
-                        border: "1px solid #ead6c3",
-                        transition: "transform 0.2s, box-shadow 0.2s",
-                        cursor: "pointer",
-                        height: "100%",
+                        overflow: "hidden", borderRadius: "12px", border: "1px solid #ead6c3",
+                        transition: "transform 0.2s, box-shadow 0.2s", cursor: "pointer", height: "100%",
                       }}
                       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.1)"; }}
                       onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -174,9 +238,11 @@ const Trending = ({ currentUser }) => {
                             No Poster
                           </div>
                         )}
-                        <span style={{ position: "absolute", top: "6px", left: "6px", background: "rgba(0,0,0,0.6)", color: "#fff", width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.75rem" }}>
-                          {index + 4}
-                        </span>
+                        {!selectedSeason && !seasonYear && (
+                          <span style={{ position: "absolute", top: "6px", left: "6px", background: "rgba(0,0,0,0.6)", color: "#fff", width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.75rem" }}>
+                            {index + 4}
+                          </span>
+                        )}
                         <span style={{ position: "absolute", bottom: "6px", left: "6px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem", textTransform: "uppercase" }}>
                           {movie.status}
                         </span>

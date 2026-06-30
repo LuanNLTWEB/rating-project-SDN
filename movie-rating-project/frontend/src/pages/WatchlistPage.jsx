@@ -6,9 +6,9 @@ import { Eye, Clock, CheckCircle, Trash2, Globe, Lock } from "lucide-react";
 import CustomSelect from "../components/CustomSelect.jsx";
 
 const statusOptions = [
-  { value: "watching", label: "Watching", color: "var(--primary)", bg: "#e0f2fe" },
-  { value: "will_watch", label: "Plan to Watch", color: "#4b5563", bg: "#f3f4f6" },
-  { value: "completed", label: "Completed", color: "#16a34a", bg: "#dcfce3" },
+  { value: "watching", label: "Watching" },
+  { value: "will_watch", label: "Plan to Watch" },
+  { value: "completed", label: "Completed" },
 ];
 
 const statusIcons = {
@@ -99,7 +99,7 @@ const WatchlistPage = ({ currentUser }) => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
         <h2 style={{ margin: 0, color: "var(--primary)" }}>
           <Eye size={20} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-          Danh sách cần xem
+          Watchlist
         </h2>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <CustomSelect
@@ -122,7 +122,7 @@ const WatchlistPage = ({ currentUser }) => {
         <div className="admin-card" style={{ padding: "2rem", textAlign: "center" }}>
           <p className="admin-muted">Your watchlist is empty. Browse movies to add some!</p>
           <Link to="/trending" className="primary-button" style={{ marginTop: "1rem", display: "inline-block" }}>
-            Browse Trending
+            Trending
           </Link>
         </div>
       ) : (

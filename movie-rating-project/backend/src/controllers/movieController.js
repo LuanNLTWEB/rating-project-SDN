@@ -292,9 +292,42 @@ const deleteMovie = async (req, res) => {
 const getTrendingMovies = async (req, res) => {
   try {
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
-    const movies = await Movie.find({ isActive: true })
+    const filter = { isActive: true };
+
+    if (req.query.year) {
+      const year = parseInt(req.query.year, 10);
+      if (req.query.season) {
+        let startMonth, endMonth, endDay, startYear = year, endYear = year;
+        if (req.query.season === "Spring") {
+          startMonth = 2; endMonth = 4; endDay = 31;
+        } else if (req.query.season === "Summer") {
+          startMonth = 5; endMonth = 7; endDay = 31;
+        } else if (req.query.season === "Fall") {
+          startMonth = 8; endMonth = 10; endDay = 30;
+        } else if (req.query.season === "Winter") {
+          startMonth = 11; endMonth = 1; endDay = 29; endYear = year + 1;
+        }
+        if (startMonth !== undefined) {
+          filter.releaseDate = {
+            $gte: new Date(startYear, startMonth, 1),
+            $lte: new Date(endYear, endMonth, endDay, 23, 59, 59)
+          };
+        }
+      } else {
+        filter.releaseDate = {
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31, 23, 59, 59)
+        };
+      }
+    }
+
+    const sort = req.query.sort === "newest"
+      ? { createdAt: -1 }
+      : { viewCount: -1, createdAt: -1 };
+
+    const movies = await Movie.find(filter)
       .populate("genres", "name")
-      .sort({ viewCount: -1, createdAt: -1 })
+      .sort(sort)
       .limit(limit)
       .lean();
     return res.status(200).json({ movies });
