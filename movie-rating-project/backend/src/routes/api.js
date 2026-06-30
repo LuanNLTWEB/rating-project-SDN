@@ -61,6 +61,7 @@ const {
 } = require("../controllers/reviewController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
+const { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs } = require("../controllers/profileController");
 
 const router = express.Router();
 
