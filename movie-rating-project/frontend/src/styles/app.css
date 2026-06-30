@@ -323,6 +323,19 @@ a:hover {
   color: var(--muted);
 }
 
+.helper-link {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--primary);
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
+
+.helper-link:hover {
+  text-decoration: underline;
+}
+
 .status-success {
   color: var(--success);
   font-weight: 600;
@@ -351,6 +364,15 @@ a:hover {
 
 .auth-aside p {
   color: #f6d8ba;
+}
+
+.auth-aside img {
+  width: 65%;
+  border-radius: 8px;
+  mix-blend-mode: lighten;
+  display: block;
+  margin: 0 auto;
+  object-fit: cover;
 }
 
 .admin-shell {
@@ -582,5 +604,82 @@ a:hover {
 
   .admin-search input {
     flex: 1;
+  }
+}
+
+/* Custom Styled Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fffaf3;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9b39d;
+  border-radius: 999px;
+  border: 2px solid #fffaf3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Firefox scrollbar compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c9b39d #fffaf3;
+}
+
+/* Hide scrollbar for Custom Select dropdown options */
+.custom-select-menu {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+.custom-select-menu::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Typography and Rich Text formatting for News */
+.news-content-body {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.news-content-body p {
+  margin-bottom: 1.2em;
+}
+.news-content-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.news-content-body h1, .news-content-body h2, .news-content-body h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  color: var(--ink);
+}
+.news-content-body a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Clearfix for floating elements inside the content body */
+.news-content-body::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Mobile responsive handling for floating images */
+@media (max-width: 768px) {
+  .news-content-body img[style*="float: left"],
+  .news-content-body img[style*="float: right"] {
+    float: none !important;
+    display: block !important;
+    margin: 1rem auto !important;
+    width: 100% !important; /* Forces image to be full width on mobile instead of floating */
   }
 }

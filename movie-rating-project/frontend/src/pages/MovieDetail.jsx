@@ -1,0 +1,498 @@
+import React, { useEffect, useState } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
+import axios from "axios";
+import { api } from "../services/api.js";
+import toast from "react-hot-toast";
+import { Heart, Eye, Clock, CheckCircle, BookmarkPlus } from "lucide-react";
+import ReviewForm from "../components/Review/ReviewForm";
+import ReviewList from "../components/Review/ReviewList";
+
+const statusOptions = [
+  { value: "watching", label: "Watching" },
+  { value: "will_watch", label: "Plan to Watch" },
+  { value: "completed", label: "Completed" },
+];
+
+const MovieDetail = ({ currentUser }) => {
+  const { id } = useParams();
+  const location = useLocation();
+  const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [watchlistStatus, setWatchlistStatus] = useState("");
+  const [showWatchlistMenu, setShowWatchlistMenu] = useState(false);
+  const [reviews, setReviews] = useState([]);
+
+  const baseURL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchMovieDetail = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${baseURL}/movies/${id}`);
+        setMovie(response.data.movie);
+        // Increment view count only once per session
+        const viewed = JSON.parse(sessionStorage.getItem("viewedMovies") || "[]");
+        if (!viewed.includes(id)) {
+          axios.patch(`${baseURL}/movies/${id}/view`).catch(() => {});
+          viewed.push(id);
+          sessionStorage.setItem("viewedMovies", JSON.stringify(viewed));
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || "Failed to load movie details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMovieDetail();
+  }, [id, baseURL]);
+
+  useEffect(() => {
+    if (!loading && location.hash === "#review-section") {
+      setTimeout(() => {
+        const el = document.getElementById("review-section");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [loading, location.hash]);
+
+  useEffect(() => {
+    if (!currentUser || !id) return;
+    api.get(`/favorites/${id}/check`).then(res => setIsFavorite(res.data.isFavorite)).catch(() => {});
+    api.get("/watchlist", { params: { status: "" } }).then(res => {
+      const item = res.data.items?.find(i => i.movie?._id === id);
+      if (item) setWatchlistStatus(item.status);
+    }).catch(() => {});
+  }, [currentUser, id]);
+
+  useEffect(() => {
+    if (!id) return;
+    api.get(`/movies/${id}/reviews`).then(res => setReviews(res.data.reviews || [])).catch(() => {});
+  }, [id]);
+
+  const handleReviewAdded = () => {
+    api.get(`/movies/${id}/reviews`).then(res => setReviews(res.data.reviews || [])).catch(() => {});
+  };
+
+  const handleReviewDeleted = (deletedId) => {
+    setReviews(reviews.filter(r => r._id !== deletedId));
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!currentUser) {
+      toast.error("Please login first");
+      return;
+    }
+    try {
+      if (isFavorite) {
+        await api.delete(`/favorites/${id}`);
+        setIsFavorite(false);
+        toast.success("Removed from favorites");
+      } else {
+        await api.post("/favorites", { movieId: id });
+        setIsFavorite(true);
+        toast.success("Added to favorites");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update");
+    }
+  };
+
+  const handleAddToWatchlist = async (status) => {
+    if (!currentUser) {
+      toast.error("Please login first");
+      return;
+    }
+    try {
+      if (watchlistStatus) {
+        await api.put(`/watchlist/${id}`, { status });
+        setWatchlistStatus(status);
+        toast.success("Watchlist updated");
+      } else {
+        await api.post("/watchlist", { movieId: id, status });
+        setWatchlistStatus(status);
+        toast.success("Added to watchlist");
+      }
+      setShowWatchlistMenu(false);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update");
+    }
+  };
+
+  const handleRemoveFromWatchlist = async () => {
+    try {
+      await api.delete(`/watchlist/${id}`);
+      setWatchlistStatus("");
+      toast.success("Removed from watchlist");
+    } catch {
+      toast.error("Failed to remove");
+    }
+  };
+
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  if (loading) {
+    return (
+      <div className="admin-shell" style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
+        <p className="admin-muted">Loading movie details...</p>
+      </div>
+    );
+  }
+
+  if (error || !movie) {
+    return (
+      <div className="admin-shell" style={{ padding: "3rem", textAlign: "center" }}>
+        <p className="status-error">{error || "Movie not found"}</p>
+        <Link to="/" className="primary-button" style={{ marginTop: "1rem", display: "inline-block" }}>Back to Home</Link>
+      </div>
+    );
+  }
+
+  const ytId = getYouTubeId(movie.trailer);
+
+  const watchlistLabel = statusOptions.find(o => o.value === watchlistStatus)?.label;
+  const isStaff = currentUser && ["staff", "admin"].includes(currentUser.role);
+
+  return (
+    <div className="admin-shell" style={{ padding: "20px 0" }}>
+      {/* Banner Backdrop */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "350px",
+          borderRadius: "16px",
+          overflow: "hidden",
+          backgroundColor: "#222",
+          backgroundImage: movie.banner ? `url(${movie.banner.startsWith('http') ? movie.banner : baseURL.replace('/api', '') + movie.banner})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
+        }}
+      >
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.3) 100%)" }} />
+
+        <div style={{ position: "absolute", bottom: "24px", left: "24px", right: "24px", display: "flex", alignItems: "flex-end", gap: "24px", flexWrap: "wrap" }}>
+          <div style={{ width: "160px", aspectRatio: "2/3", borderRadius: "12px", overflow: "hidden", border: "4px solid #fff", boxShadow: "0 10px 20px rgba(0,0,0,0.3)", backgroundColor: "#eee", flexShrink: 0 }}>
+            {movie.poster ? (
+              <img src={movie.poster.startsWith('http') ? movie.poster : `${baseURL.replace('/api', '')}${movie.poster}`} alt={movie.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888" }}>No Poster</div>
+            )}
+          </div>
+
+          <div style={{ flex: 1, minWidth: "250px", color: "#fff" }}>
+            <span style={{ background: "var(--primary)", padding: "4px 10px", borderRadius: "4px", fontSize: "0.8rem", textTransform: "uppercase", fontWeight: "bold" }}>
+              {movie.status}
+            </span>
+            <h2 style={{ fontSize: "2.2rem", margin: "10px 0 5px 0", textShadow: "0 2px 4px rgba(0,0,0,0.6)", fontWeight: "700" }}>{movie.name}</h2>
+            <p style={{ margin: 0, opacity: 0.9, fontSize: "0.95rem" }}>
+              Released: {new Date(movie.releaseDate).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons below banner */}
+      {!isStaff && (
+        <div style={{ display: "flex", gap: "10px", marginTop: "1rem", marginBottom: "1.5rem" }}>
+        <button
+          onClick={handleToggleFavorite}
+          className="primary-button"
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: isFavorite ? "var(--danger)" : "var(--primary)" }}
+        >
+          <Heart size={16} fill={isFavorite ? "#fff" : "none"} />
+          {isFavorite ? "Favorited" : "Favorite"}
+        </button>
+
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setShowWatchlistMenu(!showWatchlistMenu)}
+            className="primary-button"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontSize: "0.9rem", background: watchlistStatus ? "var(--success)" : "var(--primary)" }}
+          >
+            <BookmarkPlus size={16} />
+            {watchlistStatus ? watchlistLabel : "Watchlist"}
+          </button>
+          {showWatchlistMenu && (
+            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "4px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", zIndex: 10, minWidth: "180px", overflow: "hidden" }}>
+              {statusOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleAddToWatchlist(opt.value)}
+                  style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: watchlistStatus === opt.value ? "#f5e4d3" : "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--ink)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#f5e4d3"}
+                  onMouseLeave={e => e.currentTarget.style.background = watchlistStatus === opt.value ? "#f5e4d3" : "#fff"}
+                >
+                  {opt.label}
+                </button>
+              ))}
+              {watchlistStatus && (
+                <button
+                  onClick={handleRemoveFromWatchlist}
+                  style={{ display: "block", width: "100%", padding: "10px 16px", border: "none", background: "#fff", cursor: "pointer", textAlign: "left", fontSize: "0.9rem", color: "var(--danger)", borderTop: "1px solid #ead6c3" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#fdf0ee"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                >
+                  Remove from watchlist
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      )}
+
+      {/* Main Content Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "2rem", marginTop: "2rem" }}>
+
+        {/* Left Side: Summary & Trailer */}
+        <div>
+          <div className="admin-card" style={{ padding: "24px" }}>
+            <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Summary</h3>
+            <p style={{ lineHeight: "1.7", fontSize: "1.05rem", color: "var(--ink)", whiteSpace: "pre-line" }}>{movie.summary}</p>
+          </div>
+
+          {(() => {
+            const allTrailersList = [];
+            if (movie.trailer) allTrailersList.push(movie.trailer);
+            if (movie.trailers && movie.trailers.length > 0) {
+              movie.trailers.forEach(tr => {
+                if (tr && !allTrailersList.includes(tr)) {
+                  allTrailersList.push(tr);
+                }
+              });
+            }
+
+            if (allTrailersList.length === 0) return null;
+
+            return (
+              <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
+                <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>
+                  {allTrailersList.length > 1 ? "Trailers" : "Trailer"}
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "1rem" }}>
+                  {allTrailersList.map((trLink, index) => {
+                    const yId = getYouTubeId(trLink);
+                    return yId ? (
+                      <div key={index}>
+                        {allTrailersList.length > 1 && <h4 style={{ margin: "0 0 8px 0", color: "var(--ink)", fontSize: "0.95rem" }}>Trailer {index + 1}</h4>}
+                        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px", border: "1px solid #ead6c3" }}>
+                          <iframe
+                            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                            src={`https://www.youtube.com/embed/${yId}`}
+                            title={`${movie.name} Trailer ${index + 1}`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={index} style={{ padding: "10px", borderRadius: "8px", background: "#fffaf3", border: "1px solid #ead6c3" }}>
+                        Watch trailer here: <a href={trLink} target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary)", textDecoration: "underline" }}>{trLink}</a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Related Movies */}
+          {movie.relatedMovies && movie.relatedMovies.length > 0 && (
+            <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
+              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Related Anime / Movies</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
+                {movie.relatedMovies.map(rm => (
+                  <Link key={rm._id} to={`/movies/${rm._id}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <div style={{ width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee", border: "1px solid #ead6c3" }}>
+                      {rm.poster ? (
+                        <img src={rm.poster.startsWith('http') ? rm.poster : `${baseURL.replace('/api', '')}${rm.poster}`} alt={rm.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.8rem" }}>No Poster</div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: "0.9rem", fontWeight: "600", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.3" }}>{rm.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Side: Metadata / Info */}
+        <div>
+          <div className="admin-card" style={{ padding: "24px" }}>
+            <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Information</h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "1rem" }}>
+              <div>
+                <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Status</span>
+                <span style={{ fontSize: "1rem", textTransform: "capitalize", fontWeight: "500" }}>{movie.status}</span>
+              </div>
+
+              <div>
+                <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Total Episodes</span>
+                <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.totalEpisodes || "N/A"}</span>
+              </div>
+
+              <div>
+                <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Release Date</span>
+                <span style={{ fontSize: "1rem", fontWeight: "500" }}>{new Date(movie.releaseDate).toLocaleDateString()}</span>
+              </div>
+
+              {movie.type && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Type</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500", textTransform: "uppercase" }}>{movie.type}</span>
+                </div>
+              )}
+
+              {movie.authors && movie.authors.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Authors</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.authors.join(", ")}</span>
+                </div>
+              )}
+
+              {movie.producers && movie.producers.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Producers</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.producers.join(", ")}</span>
+                </div>
+              )}
+
+              {movie.studios && movie.studios.length > 0 && (
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Studios</span>
+                  <span style={{ fontSize: "1rem", fontWeight: "500" }}>{movie.studios.join(", ")}</span>
+                </div>
+              )}
+
+              <div>
+                <span style={{ fontWeight: "600", color: "var(--muted)", display: "block", fontSize: "0.85rem", textTransform: "uppercase" }}>Genres</span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
+                  {movie.genres && movie.genres.length > 0 ? (
+                    movie.genres.map(g => (
+                      <span key={g._id} className="role-badge status-active" style={{ fontSize: "0.8rem", padding: "3px 8px" }}>
+                        {g.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ color: "var(--muted)", fontSize: "0.9rem", fontStyle: "italic" }}>None</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Related News Articles */}
+          {movie.relatedNews && movie.relatedNews.length > 0 && (
+            <div className="admin-card" style={{ padding: "24px", marginTop: "2rem" }}>
+              <h3 style={{ marginTop: 0, borderBottom: "2px solid #ead6c3", paddingBottom: "8px", color: "var(--primary)" }}>Related News Articles</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+                {movie.relatedNews.map(rn => (
+                  <Link key={rn._id} to={`/news/${rn._id || rn}`} style={{ textDecoration: "none", color: "inherit", display: "flex", gap: "16px", padding: "10px", borderRadius: "8px", border: "1px solid #ead6c3", background: "#fffaf3", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = '#f5e4d3'} onMouseLeave={e => e.currentTarget.style.background = '#fffaf3'}>
+                    <div style={{ width: "80px", height: "60px", borderRadius: "6px", overflow: "hidden", flexShrink: 0, backgroundColor: "#eee" }}>
+                      {rn.imageUrls && rn.imageUrls.length > 0 ? (
+                        <img src={rn.imageUrls[0].startsWith('http') ? rn.imageUrls[0] : `${baseURL.replace('/api', '')}${rn.imageUrls[0]}`} alt={rn.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.7rem" }}>No Image</div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "0.95rem", fontWeight: "600", color: "var(--ink)", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{rn.title}</h4>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--muted)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.4" }}>{rn.summary}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {!isStaff && (
+        <div id="review-section">
+      {currentUser && currentUser.mutedUntil && new Date(currentUser.mutedUntil) > new Date() ? (
+        <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fef8f6", border: "1px solid var(--danger)", marginTop: "2rem" }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "var(--danger)" }}>Account Restricted</h3>
+          <p className="admin-muted" style={{ margin: "0 0 8px 0" }}>
+            You have been muted by a staff member. You cannot post, edit, or delete reviews until <strong>{new Date(currentUser.mutedUntil).toLocaleString()}</strong>.
+          </p>
+          <p style={{ margin: 0, fontWeight: "600", color: "var(--danger)" }}>
+            Reason: {currentUser.muteReason || "Violation of rules"}
+          </p>
+        </div>
+      ) : currentUser && reviews.some(r => r.user?._id === (currentUser._id || currentUser.id)) ? (() => {
+        const userReview = reviews.find(r => r.user?._id === (currentUser._id || currentUser.id));
+        return (
+          <div className="admin-card" style={{ padding: "24px", textAlign: "center", background: "#fdf0ee", border: "1px solid #ead6c3", marginTop: "2rem" }}>
+            <h3 style={{ margin: "0 0 8px 0", color: "var(--primary)" }}>You've Reviewed This Movie</h3>
+            <p className="admin-muted" style={{ margin: "0 0 16px 0" }}>You have already shared your thoughts on this movie.</p>
+            <button
+              onClick={() => {
+                toast((t) => (
+                  <div>
+                    <p style={{ margin: "0 0 10px 0", fontWeight: "600" }}>Are you sure you want to delete this review?</p>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <button onClick={() => toast.dismiss(t.id)} className="ghost-button" style={{ padding: "4px 12px", fontSize: "0.85rem", border: "1px solid #ced4da" }}>Cancel</button>
+                      <button 
+                        onClick={async () => {
+                          toast.dismiss(t.id);
+                          try {
+                            await api.delete(`/reviews/${userReview._id}`);
+                            toast.success("Review deleted successfully.");
+                            handleReviewDeleted(userReview._id);
+                          } catch (err) {
+                            toast.error("Failed to delete review.");
+                          }
+                        }} 
+                        className="primary-button" 
+                        style={{ background: "var(--danger)", padding: "4px 12px", fontSize: "0.85rem" }}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ), { duration: Infinity });
+              }}
+              className="ghost-button"
+              style={{ color: "var(--danger)", border: "1px solid var(--danger)", padding: "6px 16px", borderRadius: "20px" }}
+            >
+              Delete Review
+            </button>
+          </div>
+        );
+      })() : (
+        <ReviewForm
+          movieId={id}
+          onReviewAdded={handleReviewAdded}
+          currentUser={currentUser}
+          watchlistStatus={watchlistStatus}
+          episodesWatched={1}
+          movieStatus={movie.status}
+        />
+      )}
+      </div>
+      )}
+      
+      <ReviewList
+        reviews={reviews}
+        currentUser={currentUser}
+        onReviewDeleted={handleReviewDeleted}
+        showMovie={false}
+      />
+    </div>
+  );
+};
+
+export default MovieDetail;

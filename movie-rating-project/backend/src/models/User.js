@@ -39,6 +39,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    mutedUntil: {
+      type: Date,
+      default: null,
+    },
+    muteReason: {
+      type: String,
+      default: null,
+    },
     refreshTokenHash: {
       type: String,
       default: null,
@@ -54,6 +62,13 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: "",
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

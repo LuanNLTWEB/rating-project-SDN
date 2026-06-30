@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "../services/api";
 import { Link } from "react-router-dom";
 import rateSmarter from "../assets/anime.gif";
+import CustomSelect from "../components/CustomSelect.jsx";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../styles/datepicker.css";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -9,14 +13,37 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [gender, setGender] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const thirteenYearsAgo = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 13);
+    return d;
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage("");
     setError("");
+
+    if (!gender) {
+      setError("Please select gender");
+      return;
+    }
+
+    if (!dateOfBirth) {
+      setError("Please select date of birth");
+      return;
+    }
+
+    if (dateOfBirth > thirteenYearsAgo) {
+      setError("Must be at least 13 years old");
+      return;
+    }
+
+    const formattedDOB = `${dateOfBirth.getFullYear()}-${String(dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(dateOfBirth.getDate()).padStart(2, '0')}`;
 
     try {
       await api.post("/register", {
@@ -25,7 +52,7 @@ const Register = () => {
         password,
         passwordConfirm,
         gender,
-        dateOfBirth,
+        dateOfBirth: formattedDOB,
       });
       setMessage("Register successful");
       setName("");
@@ -33,7 +60,7 @@ const Register = () => {
       setPassword("");
       setPasswordConfirm("");
       setGender("");
-      setDateOfBirth("");
+      setDateOfBirth(null);
     } catch (err) {
       const apiMessage = err?.response?.data?.message;
       setError(apiMessage || "Register failed");
@@ -84,24 +111,34 @@ const Register = () => {
           </div>
           <div className="field">
             <label>Gender</label>
-            <select
+            <CustomSelect
               value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              required
-            >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
+              onChange={setGender}
+              options={[
+                { value: "male", label: "Male" },
+                { value: "female", label: "Female" },
+                { value: "other", label: "Other" }
+              ]}
+              placeholder="Select gender"
+              style={{ width: "100%" }}
+            />
           </div>
           <div className="field">
             <label>Date of Birth</label>
-            <input
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              required
+            <DatePicker
+              showIcon
+              selected={dateOfBirth}
+              onChange={(date) => setDateOfBirth(date)}
+              onKeyDown={(e) => e.preventDefault()}
+              maxDate={thirteenYearsAgo}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/mm/yyyy"
+              className="custom-datepicker"
+              wrapperClassName="custom-datepicker-wrapper"
+              showYearDropdown
+              scrollableYearDropdown
+              yearDropdownItemNumber={100}
+              popperPlacement="bottom-end"
             />
           </div>
           <button type="submit" className="primary-button">
@@ -118,7 +155,6 @@ const Register = () => {
         <img 
           src={rateSmarter} 
           alt="Build your profile" 
-          style={{ width: "80%", borderRadius: "8px", mixBlendMode: "lighten" }}
         />
       </aside>
     </section>

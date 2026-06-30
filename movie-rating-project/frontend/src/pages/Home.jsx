@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import CustomSelect from "../components/CustomSelect.jsx";
 
 const seasons = ["Spring", "Summer", "Fall", "Winter"];
 
@@ -8,7 +10,12 @@ const Home = ({ status, currentUser }) => {
   const [movieName, setMovieName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSeason, setSelectedSeason] = useState("");
-  const [seasonYear, setSeasonYear] = useState(new Date().getFullYear());
+  const [seasonYear, setSeasonYear] = useState("");
+
+  const [movies, setMovies] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [moviesLoading, setMoviesLoading] = useState(false);
 
   useEffect(() => {
     const fetchGenres = async () => {
@@ -25,6 +32,37 @@ const Home = ({ status, currentUser }) => {
     fetchGenres();
   }, []);
 
+  useEffect(() => {
+    setPage(1);
+  }, [movieName, selectedCategory, selectedSeason, seasonYear]);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setMoviesLoading(true);
+      try {
+        const params = {
+          page,
+          limit: 8,
+          search: movieName,
+          genre: selectedCategory,
+          season: selectedSeason,
+          year: seasonYear,
+        };
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/movies`,
+          { params }
+        );
+        setMovies(response.data.movies || []);
+        setTotalPages(response.data.pagination?.totalPages || 1);
+      } catch (error) {
+        console.error("Failed to fetch movies:", error);
+      } finally {
+        setMoviesLoading(false);
+      }
+    };
+    fetchMovies();
+  }, [movieName, selectedCategory, selectedSeason, seasonYear, page]);
+
   const filteredGenres = useMemo(() => {
     if (!selectedCategory) return genres;
     return genres.filter((g) => g._id === selectedCategory);
@@ -33,7 +71,7 @@ const Home = ({ status, currentUser }) => {
   const yearOptions = useMemo(() => {
     const current = new Date().getFullYear();
     const years = [];
-    for (let y = current; y >= current - 10; y--) {
+    for (let y = current + 2; y >= 1990; y--) {
       years.push(y);
     }
     return years;
@@ -43,11 +81,11 @@ const Home = ({ status, currentUser }) => {
     <section>
       <div className="hero">
         <h2>Chào mừng đến với AniMê</h2>
-        <p>{status}</p>
+        <p>Cuối cùng cũng có một bộ anime mà nhân vật chính là hình mẫu lý tưởng của tôi. Một kẻ lạnh lùng và ít nói. Bạn bè không hiểu tại sao tôi lại trở nên trầm mặc và luôn đạt điểm 5 trong các bài kiểm tra. Họ không biết năng lực thực sự của tôi và tôi thực sự xuất chúng như thế nào. Tôi coi họ không khác gì những công cụ. Tôi ước mình có thể bước vào thế giới anime và bộc lộ con người thật của mình. Tôi vững tin mình là hiện thân đời thực của Ayanokoji Kiyotaka.</p>
       </div>
 
       <div className="admin-card" style={{ marginTop: "2rem" }}>
-        <h3 style={{ marginTop: 0 }}>Tìm kiếm phim</h3>
+        <h3 style={{ marginTop: 0 }}>Search Movies</h3>
 
         <div
           style={{
@@ -58,10 +96,10 @@ const Home = ({ status, currentUser }) => {
           }}
         >
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flex: 1 }}>
-            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Tên phim:</span>
+            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Title:</span>
             <input
               type="search"
-              placeholder="Nhập tên phim..."
+              placeholder="Enter movie name..."
               value={movieName}
               onChange={(e) => setMovieName(e.target.value)}
               style={{
@@ -77,30 +115,17 @@ const Home = ({ status, currentUser }) => {
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Thể loại:</span>
-            <select
+            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Genre:</span>
+            <CustomSelect
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{
-                padding: "0.55rem 0.9rem",
-                borderRadius: "999px",
-                border: "1px solid #d8c6b3",
-                background: "#fffaf3",
-                fontSize: "0.95rem",
-                minWidth: "130px",
-              }}
-            >
-              <option value="">Tất cả</option>
-              {genres.map((g) => (
-                <option key={g._id} value={g._id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedCategory}
+              options={[{ value: "", label: "All" }, ...genres.map(g => ({ value: g._id, label: g.name }))]}
+              placeholder="All"
+            />
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <span style={{ fontWeight: 600, color: "var(--muted)" }}>Mùa:</span>
+            <span style={{ fontWeight: 600, color: "var(--muted)" }}>Season:</span>
             {seasons.map((s) => (
               <button
                 key={s}
@@ -122,31 +147,20 @@ const Home = ({ status, currentUser }) => {
                 {s}
               </button>
             ))}
-            <select
+            <CustomSelect
               value={seasonYear}
-              onChange={(e) => setSeasonYear(Number(e.target.value))}
-              style={{
-                padding: "0.45rem 0.6rem",
-                borderRadius: "999px",
-                border: "1px solid #d8c6b3",
-                background: "#fffaf3",
-                fontSize: "0.95rem",
-              }}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+              onChange={setSeasonYear}
+              options={[{ value: "", label: "All Years" }, ...yearOptions.map(y => ({ value: y, label: y.toString() }))]}
+              placeholder="All Years"
+            />
           </div>
         </div>
 
         {(movieName || selectedSeason) && (
           <p className="admin-subtitle" style={{ marginTop: "1rem", marginBottom: 0 }}>
-            {movieName && `Tên phim: "${movieName}"`}
+            {movieName && `Title: "${movieName}"`}
             {movieName && selectedSeason && " | "}
-            {selectedSeason && `Mùa: ${selectedSeason} ${seasonYear}`}
+            {selectedSeason && `Season: ${selectedSeason} ${seasonYear}`}
           </p>
         )}
 
@@ -158,10 +172,10 @@ const Home = ({ status, currentUser }) => {
           }}
         />
 
-        <h4 style={{ margin: "0 0 0.75rem" }}>Thể loại phim</h4>
+        <h4 style={{ margin: "0 0 0.75rem" }}>Movie Genres</h4>
 
         {filteredGenres.length === 0 ? (
-          <p className="admin-muted">Đang tải thể loại...</p>
+          <p className="admin-muted">Loading genres...</p>
         ) : (
           <div
             style={{
@@ -188,6 +202,113 @@ const Home = ({ status, currentUser }) => {
                 {genre.name}
               </span>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Movies Grid */}
+      <div style={{ marginTop: "2.5rem" }}>
+        <h3 style={{ borderBottom: "2px solid var(--primary)", paddingBottom: "0.5rem", color: "var(--primary)" }}>Anime List</h3>
+        {moviesLoading ? (
+          <p className="admin-muted">Loading movies...</p>
+        ) : movies.length === 0 ? (
+          <p className="admin-muted" style={{ fontStyle: "italic", marginTop: "1.5rem" }}>No movies found matching the criteria.</p>
+        ) : (
+          <div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1.5rem", marginTop: "1.5rem" }}>
+              {movies.map((movie) => (
+                <Link
+                  to={`/movies/${movie._id}`}
+                  key={movie._id}
+                  className="admin-card"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: "0.75rem",
+                    borderRadius: "12px",
+                    border: "1px solid #ead6c3",
+                    background: "#fff",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.02)",
+                    textDecoration: "none",
+                    color: "inherit",
+                    cursor: "pointer"
+                  }}
+                >
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eae0d5" }}>
+                    {movie.poster ? (
+                      <img
+                        src={movie.poster.startsWith('http') ? movie.poster : `${import.meta.env.VITE_API_URL.replace('/api', '')}${movie.poster}`}
+                        alt={movie.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#9c8c7d", fontSize: "0.9rem" }}>No Image</div>
+                    )}
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        background: "rgba(0,0,0,0.6)",
+                        color: "#fff",
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        fontSize: "0.75rem",
+                        textTransform: "capitalize",
+                        fontWeight: "500"
+                      }}
+                    >
+                      {movie.status}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                    <h4
+                      style={{
+                        margin: "0 0 0.5rem",
+                        fontSize: "1rem",
+                        fontWeight: "600",
+                        color: "var(--ink)",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        height: "2.6rem",
+                        lineHeight: "1.3rem"
+                      }}
+                    >
+                      {movie.name}
+                    </h4>
+                    <div style={{ marginTop: "auto" }}>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--muted)" }}>
+                        Released: {new Date(movie.releaseDate).toLocaleDateString()}
+                      </p>
+                      <p style={{ margin: "4px 0 0", fontSize: "0.8rem", color: "var(--muted)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                        Genres: {movie.genres?.map(g => g.name).join(", ") || "None"}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="admin-pagination" style={{ marginTop: "2rem" }}>
+              <button
+                className="ghost-button"
+                onClick={() => setPage(p => Math.max(p - 1, 1))}
+                disabled={page <= 1}
+              >
+                Previous
+              </button>
+              <span>Page {page} of {totalPages}</span>
+              <button
+                className="ghost-button"
+                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
