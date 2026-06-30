@@ -61,6 +61,7 @@ const {
 } = require("../controllers/reviewController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
+const { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs } = require("../controllers/profileController");
 
 const router = express.Router();
 
@@ -96,6 +97,12 @@ router.post("/staff/genres", authenticate, requireStaff, createGenre);
 router.put("/staff/genres/:id", authenticate, requireStaff, updateGenre);
 router.patch("/staff/genres/:id/toggle-status", authenticate, requireStaff, toggleGenreStatus);
 router.delete("/staff/genres/:id", authenticate, requireStaff, deleteGenre);
+
+router.get("/profile", authenticate, getProfile);
+router.put("/profile/update", authenticate, updateProfile);
+router.put("/profile/change-password", authenticate, changePassword);
+router.post("/profile/upload-avatar", authenticate, uploadAvatar);
+router.get("/profile/audit-logs", authenticate, getMyAuditLogs);
 
 router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);

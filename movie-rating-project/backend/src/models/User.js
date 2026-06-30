@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
     resetPasswordToken: {
       type: String,
       default: null,

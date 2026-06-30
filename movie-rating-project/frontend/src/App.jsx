@@ -9,6 +9,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import AdminAuditLogs from "./pages/AdminAuditLogs.jsx";
 import AdminGenres from "./pages/AdminGenres.jsx";
+import Profile from "./pages/Profile.jsx";
 import AdminGenreForm from "./pages/AdminGenreForm.jsx";
 import StaffMovies from "./pages/StaffMovies.jsx";
 import StaffMovieForm from "./pages/StaffMovieForm.jsx";
@@ -69,6 +70,7 @@ const App = () => {
       <Route path="/news" element={<NewsList />} />
       <Route path="/news/:id" element={<NewsDetail />} />
       <Route path="/reviews" element={<Reviews currentUser={user} />} />
+      <Route path="/profile" element={<Profile />} />
     </>
   );
 
@@ -89,7 +91,9 @@ const App = () => {
             )}
             {isLoggedIn && (
               <div className="user-meta">
-                <span>Hi, {user.name}</span>
+                <Link to="/profile" className="profile-button">
+                  {user.name}
+                </Link>
                 <button type="button" className="ghost-button" onClick={handleLogout}>
                   Log out
                 </button>
