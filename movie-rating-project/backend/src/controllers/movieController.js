@@ -297,20 +297,15 @@ const getTrendingMovies = async (req, res) => {
     if (req.query.year) {
       const year = parseInt(req.query.year, 10);
       if (req.query.season) {
-        let startMonth, endMonth, endDay, startYear = year, endYear = year;
-        if (req.query.season === "Spring") {
-          startMonth = 2; endMonth = 4; endDay = 31;
-        } else if (req.query.season === "Summer") {
-          startMonth = 5; endMonth = 7; endDay = 31;
-        } else if (req.query.season === "Fall") {
-          startMonth = 8; endMonth = 10; endDay = 30;
-        } else if (req.query.season === "Winter") {
-          startMonth = 11; endMonth = 1; endDay = 29; endYear = year + 1;
-        }
+        let startMonth, endMonth, startYear = year, endYear = year;
+        if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
+        else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
+        else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
+        else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
         if (startMonth !== undefined) {
           filter.releaseDate = {
             $gte: new Date(startYear, startMonth, 1),
-            $lte: new Date(endYear, endMonth, endDay, 23, 59, 59)
+            $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
           };
         }
       } else {
@@ -321,9 +316,13 @@ const getTrendingMovies = async (req, res) => {
       }
     }
 
-    const sort = req.query.sort === "newest"
-      ? { createdAt: -1 }
-      : { viewCount: -1, createdAt: -1 };
+    let sort;
+    switch (req.query.sort) {
+      case "newest": sort = { createdAt: -1 }; break;
+      case "rating": sort = { averageRating: -1, reviewCount: -1, createdAt: -1 }; break;
+      case "comments": sort = { reviewCount: -1, averageRating: -1, createdAt: -1 }; break;
+      default: sort = { viewCount: -1, createdAt: -1 };
+    }
 
     const movies = await Movie.find(filter)
       .populate("genres", "name")

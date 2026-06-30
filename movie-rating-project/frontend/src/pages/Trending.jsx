@@ -15,6 +15,8 @@ const rankColors = [
 const sortOptions = [
   { value: "trending", label: "Trending" },
   { value: "newest", label: "Newest" },
+  { value: "rating", label: "Top Rated" },
+  { value: "comments", label: "Most Comments" },
 ];
 
 const Trending = ({ currentUser }) => {
@@ -50,6 +52,20 @@ const Trending = ({ currentUser }) => {
     fetchTrending();
   }, [selectedSeason, seasonYear, sortBy]);
 
+  const handleSeasonClick = (season) => {
+    if (selectedSeason === season) {
+      setSelectedSeason("");
+    } else {
+      setSelectedSeason(season);
+      if (!seasonYear) setSeasonYear(currentYear.toString());
+    }
+  };
+
+  const handleAllClick = () => {
+    setSelectedSeason("");
+    setSeasonYear("");
+  };
+
   if (loading) {
     return (
       <div className="admin-shell" style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
@@ -71,11 +87,11 @@ const Trending = ({ currentUser }) => {
               type="button"
               className="ghost-button"
               style={{
-                background: !selectedSeason ? "var(--primary)" : "transparent",
-                color: !selectedSeason ? "#fff" : "var(--ink)",
-                border: !selectedSeason ? "1px solid var(--primary)" : "1px solid #c9b39d",
+                background: !selectedSeason && !seasonYear ? "var(--primary)" : "transparent",
+                color: !selectedSeason && !seasonYear ? "#fff" : "var(--ink)",
+                border: !selectedSeason && !seasonYear ? "1px solid var(--primary)" : "1px solid #c9b39d",
               }}
-              onClick={() => { setSelectedSeason(""); setSeasonYear(""); }}
+              onClick={handleAllClick}
             >
               All
             </button>
@@ -89,7 +105,7 @@ const Trending = ({ currentUser }) => {
                   color: selectedSeason === s ? "#fff" : "var(--ink)",
                   border: selectedSeason === s ? "1px solid var(--primary)" : "1px solid #c9b39d",
                 }}
-                onClick={() => setSelectedSeason(selectedSeason === s ? "" : s)}
+                onClick={() => handleSeasonClick(s)}
               >
                 {s}
               </button>
@@ -107,7 +123,7 @@ const Trending = ({ currentUser }) => {
             onChange={setSortBy}
             options={sortOptions}
             placeholder="Sort"
-            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "120px" }}
+            buttonStyle={{ padding: "0.5rem 1rem", fontSize: "0.85rem", minWidth: "130px" }}
           />
         </div>
       </div>
@@ -143,12 +159,10 @@ const Trending = ({ currentUser }) => {
                       <div
                         className="admin-card"
                         style={{
-                          overflow: "hidden",
-                          borderRadius: "16px",
+                          overflow: "hidden", borderRadius: "16px",
                           border: index === 0 ? "2px solid #FFD700" : "1px solid #ead6c3",
                           transition: "transform 0.25s, box-shadow 0.25s",
-                          cursor: "pointer",
-                          height: "100%",
+                          cursor: "pointer", height: "100%",
                         }}
                         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.12)"; }}
                         onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -191,9 +205,14 @@ const Trending = ({ currentUser }) => {
                           )}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8rem", color: "var(--muted)" }}>
                             <span>{new Date(movie.releaseDate).toLocaleDateString()}</span>
-                            {movie.viewCount > 0 && (
-                              <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>
-                            )}
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                              {movie.averageRating > 0 && (
+                                <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
+                              )}
+                              {movie.viewCount > 0 && (
+                                <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -249,11 +268,14 @@ const Trending = ({ currentUser }) => {
                       </div>
                       <div style={{ padding: "10px" }}>
                         <h4 style={{ margin: "0 0 4px 0", fontSize: "0.9rem", fontWeight: "600", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: "1.3" }}>{movie.name}</h4>
-                        {movie.viewCount > 0 && (
-                          <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--muted)" }}>
-                            {movie.viewCount.toLocaleString()} views
-                          </p>
-                        )}
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "0.75rem", color: "var(--muted)" }}>
+                          {movie.averageRating > 0 && (
+                            <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
+                          )}
+                          {movie.viewCount > 0 && (
+                            <span>{movie.viewCount.toLocaleString()} views</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>
