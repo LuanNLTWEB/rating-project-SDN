@@ -10,8 +10,8 @@ const rankColors = [
 
 const sortOptions = [
   { value: "trending", label: "Trending" },
+  { value: "popular", label: "Most Popular" },
   { value: "rating", label: "Top Rated" },
-  { value: "comments", label: "Most Comments" },
 ];
 
 const Trending = () => {
@@ -23,8 +23,16 @@ const Trending = () => {
     const fetchTrending = async () => {
       setLoading(true);
       try {
-        const params = { limit: 20, sort: sortBy };
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, { params });
+        const params = { limit: 20 };
+        let url = `${import.meta.env.VITE_API_URL}/movies/trending`;
+        if (sortBy === "popular") {
+          url = `${import.meta.env.VITE_API_URL}/movies/popular`;
+        } else if (sortBy === "rating") {
+          url = `${import.meta.env.VITE_API_URL}/movies/top-rated`;
+        } else {
+          params.sort = sortBy;
+        }
+        const res = await axios.get(url, { params });
         setMovies(res.data.movies || []);
       } catch {
         // silently fail
@@ -38,13 +46,15 @@ const Trending = () => {
   const renderMeta = (movie) => {
     switch (sortBy) {
       case "rating":
-        return movie.averageRating > 0
+        return movie.bayesianRating > 0
+          ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.bayesianRating.toFixed(2)}</span>
+          : movie.averageRating > 0 
           ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
           : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No rating</span>;
-      case "comments":
-        return movie.reviewCount > 0
-          ? <span style={{ fontWeight: "600" }}>{movie.reviewCount} comments</span>
-          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No comments</span>;
+      case "popular":
+        return movie.memberCount > 0
+          ? <span style={{ fontWeight: "600" }}>{movie.memberCount.toLocaleString()} in Watchlists</span>
+          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>0 in Watchlists</span>;
       default:
         return movie.viewCount > 0
           ? <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>

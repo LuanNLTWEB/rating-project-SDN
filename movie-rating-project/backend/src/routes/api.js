@@ -26,6 +26,8 @@ const {
 	deleteMovie,
 	getTrendingMovies,
 	incrementViewCount,
+	getMostPopularMovies,
+	getTopRatedMovies,
 } = require("../controllers/movieController");
 const {
 	listPublicNews,
@@ -106,6 +108,8 @@ router.get("/profile/audit-logs", authenticate, getMyAuditLogs);
 
 router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);
+router.get("/movies/popular", getMostPopularMovies);
+router.get("/movies/top-rated", getTopRatedMovies);
 router.get("/movies/:id", getMovieById);
 router.patch("/movies/:id/view", incrementViewCount);
 
