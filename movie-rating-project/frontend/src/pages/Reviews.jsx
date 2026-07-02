@@ -141,7 +141,26 @@ const Reviews = ({ currentUser }) => {
                           background: isSelected ? "#fdf0ee" : "transparent"
                         }}
                       >
-                        <div style={{ width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee", border: "1px solid #ead6c3" }}>
+                        <div style={{ position: "relative", width: "100%", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee", border: "1px solid #ead6c3" }}>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "6px",
+                              left: "6px",
+                              background: "rgba(0,0,0,0.7)",
+                              color: "#fff",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              fontSize: "0.8rem",
+                              fontWeight: "bold",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            <span style={{ color: "#f59e0b", fontSize: "1rem", lineHeight: 1 }}>★</span>
+                            <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                          </div>
                           {posterUrl ? (
                             <img src={posterUrl} alt={movie.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           ) : (

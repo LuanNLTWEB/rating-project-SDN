@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const User = require("../models/User");
 const { sendResetEmail } = require("../config/mailer");
+const xss = require("xss");
 
 const createAccessToken = (user) =>
   jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -68,7 +69,7 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    const newUser = new User({ name, email, password, gender, dateOfBirth });
+    const newUser = new User({ name: xss(name), email, password, gender, dateOfBirth });
     await newUser.save();
 
     res.status(201).json({

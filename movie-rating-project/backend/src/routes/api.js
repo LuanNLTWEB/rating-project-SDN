@@ -61,6 +61,11 @@ const {
 	forceSpoiler,
 	togglePin,
 } = require("../controllers/reviewController");
+const {
+  getUserAnalytics,
+  getReviewAnalytics,
+  getMovieAnalytics,
+} = require("../controllers/analyticsController");
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 const { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs } = require("../controllers/profileController");
@@ -169,5 +174,10 @@ router.post("/reviews/:id/react", authenticate, reactToReview);
 
 router.patch("/staff/reviews/:id/force-spoiler", authenticate, requireStaff, forceSpoiler);
 router.patch("/staff/reviews/:id/pin", authenticate, requireStaff, togglePin);
+
+// Analytics routes
+router.get("/analytics/users", authenticate, requireStaff, getUserAnalytics);
+router.get("/analytics/reviews", authenticate, requireStaff, getReviewAnalytics);
+router.get("/analytics/movies", authenticate, requireStaff, getMovieAnalytics);
 
 module.exports = router;

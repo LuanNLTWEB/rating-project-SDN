@@ -1,6 +1,7 @@
 const Review = require("../models/Review");
 const Movie = require("../models/Movie");
 const Watchlist = require("../models/Watchlist");
+const xss = require("xss");
 
 // Helper to update movie average rating and review count
 const updateMovieRating = async (movieId) => {
@@ -21,7 +22,8 @@ const getWordCount = (text) => {
 exports.createReview = async (req, res) => {
   try {
     const { movieId } = req.params;
-    const { overallRating, bodyText, containsSpoiler, recommendation } = req.body;
+    const { overallRating, containsSpoiler, recommendation } = req.body;
+    const bodyText = xss(req.body.bodyText);
     const userId = req.user._id;
 
     if (req.user.mutedUntil && new Date(req.user.mutedUntil) > new Date()) {
@@ -93,7 +95,8 @@ exports.createReview = async (req, res) => {
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const { overallRating, bodyText, containsSpoiler, recommendation } = req.body;
+    const { overallRating, containsSpoiler, recommendation } = req.body;
+    const bodyText = req.body.bodyText ? xss(req.body.bodyText) : undefined;
     const userId = req.user._id;
 
     const review = await Review.findById(id);
@@ -167,7 +170,7 @@ exports.deleteReview = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
-// Get reviews for a movie
+// Get reviews for a movie
 exports.getReviewsForMovie = async (req, res) => {
   try {
     const { movieId } = req.params;
@@ -183,7 +186,6 @@ exports.getReviewsForMovie = async (req, res) => {
   }
 };
 
-// React to a review
 // React to a review
 exports.reactToReview = async (req, res) => {
   try {

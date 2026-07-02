@@ -159,6 +159,25 @@ const Trending = () => {
                           <span style={{ position: "absolute", bottom: "8px", left: "8px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "3px 10px", borderRadius: "4px", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: "600" }}>
                             {movie.status}
                           </span>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "8px",
+                              right: "8px",
+                              background: "rgba(0,0,0,0.7)",
+                              color: "#fff",
+                              padding: "3px 8px",
+                              borderRadius: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
+                            <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                          </div>
                         </div>
                         <div style={{ padding: "14px" }}>
                           <h4 style={{ margin: "0 0 6px 0", fontSize: "1rem", fontWeight: "700", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{movie.name}</h4>
@@ -219,6 +238,25 @@ const Trending = () => {
                         <span style={{ position: "absolute", top: "6px", left: "6px", background: "rgba(0,0,0,0.6)", color: "#fff", width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.75rem" }}>
                           {index + 4}
                         </span>
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "6px",
+                            right: "6px",
+                            background: "rgba(0,0,0,0.7)",
+                            color: "#fff",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            fontSize: "0.8rem",
+                            fontWeight: "bold",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px"
+                          }}
+                        >
+                          <span style={{ color: "#f59e0b", fontSize: "1rem", lineHeight: 1 }}>★</span>
+                          <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                        </div>
                         <span style={{ position: "absolute", bottom: "6px", left: "6px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem", textTransform: "uppercase" }}>
                           {movie.status}
                         </span>

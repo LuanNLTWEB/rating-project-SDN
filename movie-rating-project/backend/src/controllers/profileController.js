@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const bcrypt = require("bcryptjs");
+const xss = require("xss");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -78,7 +79,7 @@ const updateProfile = async (req, res) => {
       }
 
       // Cập nhật các trường chữ nếu có thay đổi gửi lên
-      if (name) user.name = name.trim();
+      if (name) user.name = xss(name.trim());
       if (gender) user.gender = gender;
       if (dateOfBirth) user.dateOfBirth = dateOfBirth;
 

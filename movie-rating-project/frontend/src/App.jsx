@@ -23,6 +23,8 @@ import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import AdminReviews from "./pages/AdminReviews.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import StaffDashboard from "./pages/StaffDashboard.jsx";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
@@ -104,12 +106,14 @@ const App = () => {
 
         {user?.role === "admin" ? (
           <nav className="nav-links nav-secondary">
+            <Link to="/admin/dashboard">Dashboard</Link>
             <Link to="/admin/users">Users</Link>
             <Link to="/admin/audit">Audit Logs</Link>
           </nav>
         ) : user?.role === "staff" ? (
           <nav className="nav-links nav-secondary">
             <Link to="/">Home</Link>
+            <Link to="/staff/dashboard">Dashboard</Link>
             <Link to="/staff/genres">Genres</Link>
             <Link to="/staff/movies">Movies</Link>
             <Link to="/staff/news">News CMS</Link>
@@ -143,6 +147,10 @@ const App = () => {
             <>
               {publicRoutes}
               <Route
+                path="/admin/dashboard"
+                element={<AdminDashboard />}
+              />
+              <Route
                 path="/admin/users"
                 element={<AdminUsers currentUser={user} />}
               />
@@ -157,6 +165,10 @@ const App = () => {
               {publicRoutes}
               <Route path="/favorites" element={<Favorites currentUser={user} />} />
               <Route path="/watchlist" element={<WatchlistPage currentUser={user} />} />
+              <Route
+                path="/staff/dashboard"
+                element={<StaffDashboard />}
+              />
               <Route
                 path="/staff/genres"
                 element={<AdminGenres currentUser={user} />}
