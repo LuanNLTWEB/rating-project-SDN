@@ -1,18 +1,26 @@
 const User = require("../models/User");
 const multer = require("multer");
+const { v2: cloudinary } = require("cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const path = require("path");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const bcrypt = require("bcryptjs");
 const xss = require("xss");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/uploads/avatars/");
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "avatars",
+    allowed_formats: ["jpg", "jpeg", "png"],
+    public_id: (req, file) => req.user.id + "-" + Date.now(),
   },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + path.extname(file.originalname);
-    cb(null, req.user.id + "-" + uniqueSuffix);
-  }
 });
 
 const fileFilter = (req, file, cb) => {
@@ -85,7 +93,8 @@ const updateProfile = async (req, res) => {
 
       // Cập nhật đường dẫn ảnh đại diện nếu người dùng có chọn file ảnh mới
       if (req.file) {
-        user.avatar = `/uploads/avatars/${req.file.filename}`;
+        // Cloudinary trả về đường link ảnh đầy đủ trong req.file.path
+        user.avatar = req.file.path;
       }
 
       await user.save();
@@ -163,7 +172,8 @@ const uploadAvatar = async (req, res) => {
     }
 
     try {
-      const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+      // Cloudinary trả về đường link ảnh đầy đủ trong req.file.path
+      const avatarUrl = req.file.path;
       const user = await User.findById(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -198,5 +208,3 @@ const getMyAuditLogs = async (req, res) => {
 };
 
 module.exports = { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs, upload };
-
-
