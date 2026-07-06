@@ -83,7 +83,7 @@ const Favorites = ({ currentUser }) => {
                       }}
                     >
                       <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
-                      <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                      <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
                     </div>
                     {movie.poster ? (
                       <img

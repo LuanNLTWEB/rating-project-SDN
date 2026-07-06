@@ -176,7 +176,7 @@ const Trending = () => {
                             }}
                           >
                             <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
-                            <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                            <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
                           </div>
                         </div>
                         <div style={{ padding: "14px" }}>
@@ -255,7 +255,7 @@ const Trending = () => {
                           }}
                         >
                           <span style={{ color: "#f59e0b", fontSize: "1rem", lineHeight: 1 }}>★</span>
-                          <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                          <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
                         </div>
                         <span style={{ position: "absolute", bottom: "6px", left: "6px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem", textTransform: "uppercase" }}>
                           {movie.status}
