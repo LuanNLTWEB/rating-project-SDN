@@ -190,10 +190,16 @@ const MovieDetail = ({ currentUser }) => {
           </div>
 
           <div style={{ flex: 1, minWidth: "250px", color: "#fff" }}>
-            <span style={{ background: "var(--primary)", padding: "4px 10px", borderRadius: "4px", fontSize: "0.8rem", textTransform: "uppercase", fontWeight: "bold" }}>
-              {movie.status}
-            </span>
-            <h2 style={{ fontSize: "2.2rem", margin: "10px 0 5px 0", textShadow: "0 2px 4px rgba(0,0,0,0.6)", fontWeight: "700" }}>{movie.name}</h2>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "10px" }}>
+              <span style={{ background: "var(--primary)", padding: "4px 10px", borderRadius: "4px", fontSize: "0.8rem", textTransform: "uppercase", fontWeight: "bold" }}>
+                {movie.status}
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "4px" }}>
+                <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
+                <span style={{ fontSize: "1rem", fontWeight: "bold" }}>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+              </div>
+            </div>
+            <h2 style={{ fontSize: "2.2rem", margin: "0 0 5px 0", textShadow: "0 2px 4px rgba(0,0,0,0.6)", fontWeight: "700" }}>{movie.name}</h2>
             <p style={{ margin: 0, opacity: 0.9, fontSize: "0.95rem" }}>
               Released: {new Date(movie.releaseDate).toLocaleDateString()}
             </p>

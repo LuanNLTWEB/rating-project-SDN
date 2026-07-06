@@ -65,7 +65,26 @@ const Favorites = ({ currentUser }) => {
             return (
               <div key={fav._id} className="admin-card" style={{ overflow: "hidden", position: "relative" }}>
                 <Link to={`/movies/${movie._id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                  <div style={{ width: "100%", aspectRatio: "2/3", backgroundColor: "#eee", overflow: "hidden" }}>
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "2/3", backgroundColor: "#eee", overflow: "hidden" }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        background: "rgba(0,0,0,0.7)",
+                        color: "#fff",
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        fontSize: "0.85rem",
+                        fontWeight: "bold",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
+                      <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                    </div>
                     {movie.poster ? (
                       <img
                         src={movie.poster.startsWith("http") ? movie.poster : `${import.meta.env.VITE_API_URL.replace("/api", "")}${movie.poster}`}

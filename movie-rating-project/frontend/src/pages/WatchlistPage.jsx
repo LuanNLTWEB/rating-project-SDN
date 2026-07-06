@@ -126,7 +126,26 @@ const WatchlistPage = ({ currentUser }) => {
               <div key={item._id} className="admin-card" style={{ padding: 0 }}>
                 <div style={{ display: "flex", gap: "12px", padding: "12px" }}>
                   <Link to={`/movies/${movie._id}`} style={{ flexShrink: 0, textDecoration: "none" }}>
-                    <div style={{ width: "80px", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee" }}>
+                    <div style={{ position: "relative", width: "80px", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "4px",
+                          left: "4px",
+                          background: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          padding: "1px 4px",
+                          borderRadius: "4px",
+                          fontSize: "0.65rem",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "2px"
+                        }}
+                      >
+                        <span style={{ color: "#f59e0b", fontSize: "0.8rem", lineHeight: 1 }}>★</span>
+                        <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                      </div>
                       {movie.poster ? (
                         <img
                           src={movie.poster.startsWith("http") ? movie.poster : `${import.meta.env.VITE_API_URL.replace("/api", "")}${movie.poster}`}

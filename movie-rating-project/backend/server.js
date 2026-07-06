@@ -4,9 +4,11 @@ const dotenv = require("dotenv");
 const connectDB = require("./src/config/db");
 const apiRoutes = require("./src/routes/api");
 const path = require("path");
+const startRankingCron = require("./src/cron/rankingCron");
 
 dotenv.config();
 connectDB();
+startRankingCron();
 
 const app = express();
 

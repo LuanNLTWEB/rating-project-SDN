@@ -351,6 +351,88 @@ const incrementViewCount = async (req, res) => {
   }
 };
 
+const getMostPopularMovies = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+    const filter = { isActive: true };
+
+    if (req.query.year) {
+      const year = parseInt(req.query.year, 10);
+      if (req.query.season) {
+        let startMonth, endMonth, startYear = year, endYear = year;
+        if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
+        else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
+        else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
+        else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
+        if (startMonth !== undefined) {
+          filter.releaseDate = {
+            $gte: new Date(startYear, startMonth, 1),
+            $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
+          };
+        }
+      } else {
+        filter.releaseDate = {
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31, 23, 59, 59)
+        };
+      }
+    }
+
+    const [movies, total] = await Promise.all([
+      Movie.find(filter)
+        .populate("genres", "name")
+        .sort({ memberCount: -1, createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Movie.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      movies,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const getTopRatedMovies = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
+    const filter = { isActive: true };
+
+    const [movies, total] = await Promise.all([
+      Movie.find(filter)
+        .populate("genres", "name")
+        .sort({ bayesianRating: -1, averageRating: -1, createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Movie.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      movies,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   listMovies,
   getMovieById,
@@ -360,4 +442,6 @@ module.exports = {
   deleteMovie,
   getTrendingMovies,
   incrementViewCount,
+  getMostPopularMovies,
+  getTopRatedMovies,
 };

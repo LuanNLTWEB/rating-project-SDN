@@ -10,8 +10,8 @@ const rankColors = [
 
 const sortOptions = [
   { value: "trending", label: "Trending" },
+  { value: "popular", label: "Most Popular" },
   { value: "rating", label: "Top Rated" },
-  { value: "comments", label: "Most Comments" },
 ];
 
 const Trending = () => {
@@ -23,8 +23,16 @@ const Trending = () => {
     const fetchTrending = async () => {
       setLoading(true);
       try {
-        const params = { limit: 20, sort: sortBy };
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/trending`, { params });
+        const params = { limit: 20 };
+        let url = `${import.meta.env.VITE_API_URL}/movies/trending`;
+        if (sortBy === "popular") {
+          url = `${import.meta.env.VITE_API_URL}/movies/popular`;
+        } else if (sortBy === "rating") {
+          url = `${import.meta.env.VITE_API_URL}/movies/top-rated`;
+        } else {
+          params.sort = sortBy;
+        }
+        const res = await axios.get(url, { params });
         setMovies(res.data.movies || []);
       } catch {
         // silently fail
@@ -38,13 +46,15 @@ const Trending = () => {
   const renderMeta = (movie) => {
     switch (sortBy) {
       case "rating":
-        return movie.averageRating > 0
+        return movie.bayesianRating > 0
+          ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.bayesianRating.toFixed(2)}</span>
+          : movie.averageRating > 0 
           ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
           : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No rating</span>;
-      case "comments":
-        return movie.reviewCount > 0
-          ? <span style={{ fontWeight: "600" }}>{movie.reviewCount} comments</span>
-          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No comments</span>;
+      case "popular":
+        return movie.memberCount > 0
+          ? <span style={{ fontWeight: "600" }}>{movie.memberCount.toLocaleString()} in Watchlists</span>
+          : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>0 in Watchlists</span>;
       default:
         return movie.viewCount > 0
           ? <span style={{ fontWeight: "600" }}>{movie.viewCount.toLocaleString()} views</span>
@@ -149,6 +159,25 @@ const Trending = () => {
                           <span style={{ position: "absolute", bottom: "8px", left: "8px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "3px 10px", borderRadius: "4px", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: "600" }}>
                             {movie.status}
                           </span>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "8px",
+                              right: "8px",
+                              background: "rgba(0,0,0,0.7)",
+                              color: "#fff",
+                              padding: "3px 8px",
+                              borderRadius: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
+                            <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                          </div>
                         </div>
                         <div style={{ padding: "14px" }}>
                           <h4 style={{ margin: "0 0 6px 0", fontSize: "1rem", fontWeight: "700", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{movie.name}</h4>
@@ -209,6 +238,25 @@ const Trending = () => {
                         <span style={{ position: "absolute", top: "6px", left: "6px", background: "rgba(0,0,0,0.6)", color: "#fff", width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.75rem" }}>
                           {index + 4}
                         </span>
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "6px",
+                            right: "6px",
+                            background: "rgba(0,0,0,0.7)",
+                            color: "#fff",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            fontSize: "0.8rem",
+                            fontWeight: "bold",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px"
+                          }}
+                        >
+                          <span style={{ color: "#f59e0b", fontSize: "1rem", lineHeight: 1 }}>★</span>
+                          <span>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                        </div>
                         <span style={{ position: "absolute", bottom: "6px", left: "6px", background: "rgba(0,0,0,0.75)", color: "#fff", padding: "2px 8px", borderRadius: "4px", fontSize: "0.7rem", textTransform: "uppercase" }}>
                           {movie.status}
                         </span>
