@@ -412,7 +412,7 @@ const getTopRatedMovies = async (req, res) => {
     const [movies, total] = await Promise.all([
       Movie.find(filter)
         .populate("genres", "name")
-        .sort({ bayesianRating: -1, averageRating: -1, createdAt: -1 })
+        .sort({ averageRating: -1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),

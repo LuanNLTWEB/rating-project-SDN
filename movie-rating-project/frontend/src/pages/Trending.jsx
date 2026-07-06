@@ -46,9 +46,7 @@ const Trending = () => {
   const renderMeta = (movie) => {
     switch (sortBy) {
       case "rating":
-        return movie.bayesianRating > 0
-          ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.bayesianRating.toFixed(2)}</span>
-          : movie.averageRating > 0 
+        return movie.averageRating > 0
           ? <span style={{ fontWeight: "600", color: "#f59e0b" }}>★ {movie.averageRating.toFixed(1)}</span>
           : <span style={{ color: "var(--muted)", fontStyle: "italic" }}>No rating</span>;
       case "popular":
