@@ -196,7 +196,7 @@ const MovieDetail = ({ currentUser }) => {
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "4px" }}>
                 <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
-                <span style={{ fontSize: "1rem", fontWeight: "bold" }}>{movie.bayesianRating > 0 ? movie.bayesianRating.toFixed(2) : (movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A")}</span>
+                <span style={{ fontSize: "1rem", fontWeight: "bold" }}>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
               </div>
             </div>
             <h2 style={{ fontSize: "2.2rem", margin: "0 0 5px 0", textShadow: "0 2px 4px rgba(0,0,0,0.6)", fontWeight: "700" }}>{movie.name}</h2>

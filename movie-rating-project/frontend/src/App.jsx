@@ -21,6 +21,7 @@ import StaffNewsEditor from "./pages/StaffNewsEditor.jsx";
 import Trending from "./pages/Trending.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import AdminReviews from "./pages/AdminReviews.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import StaffDashboard from "./pages/StaffDashboard.jsx";
@@ -70,6 +71,7 @@ const App = () => {
       <Route path="/movies/:id" element={<MovieDetail currentUser={user} />} />
       <Route path="/news" element={<NewsList />} />
       <Route path="/news/:id" element={<NewsDetail />} />
+      <Route path="/reviews" element={<Reviews currentUser={user} />} />
       <Route path="/profile" element={<Profile />} />
     </>
   );
