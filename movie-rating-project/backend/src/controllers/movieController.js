@@ -18,47 +18,49 @@ const listMovies = async (req, res) => {
     }
 
     if (req.query.genre) {
-      filter.genres = req.query.genre;
+      const genreIds = Array.isArray(req.query.genre) ? req.query.genre : req.query.genre.split(",").filter(Boolean);
+      filter.genres = genreIds.length === 1 ? genreIds[0] : { $in: genreIds };
     }
 
     if (req.query.status) {
       filter.status = req.query.status;
     }
 
-    if (req.query.year) {
-      const year = parseInt(req.query.year, 10);
-      if (req.query.season) {
-        let startMonth, endMonth, endDay, startYear = year, endYear = year;
-        if (req.query.season === "Spring") {
-          startMonth = 2; // March
-          endMonth = 4;   // May
-          endDay = 31;
-        } else if (req.query.season === "Summer") {
-          startMonth = 5; // June
-          endMonth = 7;   // August
-          endDay = 31;
-        } else if (req.query.season === "Fall") {
-          startMonth = 8; // September
-          endMonth = 10;  // November
-          endDay = 30;
-        } else if (req.query.season === "Winter") {
-          startMonth = 11; // December
-          endMonth = 1;    // February of next year
-          endDay = 29;
-          endYear = year + 1;
-        }
-
-        if (startMonth !== undefined) {
-          filter.releaseDate = {
-            $gte: new Date(startYear, startMonth, 1),
-            $lte: new Date(endYear, endMonth, endDay, 23, 59, 59)
-          };
+    if (req.query.season || req.query.year) {
+      if (req.query.season && !req.query.year) {
+        let months;
+        if (req.query.season === "Spring") { months = [3, 4, 5]; }
+        else if (req.query.season === "Summer") { months = [6, 7, 8]; }
+        else if (req.query.season === "Fall") { months = [9, 10, 11]; }
+        else if (req.query.season === "Winter") { months = [12, 1, 2]; }
+        if (months) {
+          filter.$expr = { $in: [{ $month: "$releaseDate" }, months] };
         }
       } else {
-        filter.releaseDate = {
-          $gte: new Date(year, 0, 1),
-          $lte: new Date(year, 11, 31, 23, 59, 59)
-        };
+        const year = parseInt(req.query.year, 10);
+        if (req.query.season) {
+          let startMonth, endMonth, endDay, startYear = year, endYear = year;
+          if (req.query.season === "Spring") {
+            startMonth = 2; endMonth = 4; endDay = 31;
+          } else if (req.query.season === "Summer") {
+            startMonth = 5; endMonth = 7; endDay = 31;
+          } else if (req.query.season === "Fall") {
+            startMonth = 8; endMonth = 10; endDay = 30;
+          } else if (req.query.season === "Winter") {
+            startMonth = 11; endMonth = 1; endDay = 29; endYear = year + 1;
+          }
+          if (startMonth !== undefined) {
+            filter.releaseDate = {
+              $gte: new Date(startYear, startMonth, 1),
+              $lte: new Date(endYear, endMonth, endDay, 23, 59, 59)
+            };
+          }
+        } else {
+          filter.releaseDate = {
+            $gte: new Date(year, 0, 1),
+            $lte: new Date(year, 11, 31, 23, 59, 59)
+          };
+        }
       }
     }
 
@@ -294,25 +296,36 @@ const getTrendingMovies = async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
     const filter = { isActive: true };
 
-    if (req.query.year) {
-      const year = parseInt(req.query.year, 10);
-      if (req.query.season) {
-        let startMonth, endMonth, startYear = year, endYear = year;
-        if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
-        else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
-        else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
-        else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
-        if (startMonth !== undefined) {
-          filter.releaseDate = {
-            $gte: new Date(startYear, startMonth, 1),
-            $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
-          };
+    if (req.query.season || req.query.year) {
+      if (req.query.season && !req.query.year) {
+        let months;
+        if (req.query.season === "Spring") { months = [3, 4, 5]; }
+        else if (req.query.season === "Summer") { months = [6, 7, 8]; }
+        else if (req.query.season === "Fall") { months = [9, 10, 11]; }
+        else if (req.query.season === "Winter") { months = [12, 1, 2]; }
+        if (months) {
+          filter.$expr = { $in: [{ $month: "$releaseDate" }, months] };
         }
       } else {
-        filter.releaseDate = {
-          $gte: new Date(year, 0, 1),
-          $lte: new Date(year, 11, 31, 23, 59, 59)
-        };
+        const year = parseInt(req.query.year, 10);
+        if (req.query.season) {
+          let startMonth, endMonth, startYear = year, endYear = year;
+          if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
+          else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
+          else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
+          else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
+          if (startMonth !== undefined) {
+            filter.releaseDate = {
+              $gte: new Date(startYear, startMonth, 1),
+              $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
+            };
+          }
+        } else {
+          filter.releaseDate = {
+            $gte: new Date(year, 0, 1),
+            $lte: new Date(year, 11, 31, 23, 59, 59)
+          };
+        }
       }
     }
 
@@ -357,25 +370,36 @@ const getMostPopularMovies = async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
     const filter = { isActive: true };
 
-    if (req.query.year) {
-      const year = parseInt(req.query.year, 10);
-      if (req.query.season) {
-        let startMonth, endMonth, startYear = year, endYear = year;
-        if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
-        else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
-        else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
-        else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
-        if (startMonth !== undefined) {
-          filter.releaseDate = {
-            $gte: new Date(startYear, startMonth, 1),
-            $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
-          };
+    if (req.query.season || req.query.year) {
+      if (req.query.season && !req.query.year) {
+        let months;
+        if (req.query.season === "Spring") { months = [3, 4, 5]; }
+        else if (req.query.season === "Summer") { months = [6, 7, 8]; }
+        else if (req.query.season === "Fall") { months = [9, 10, 11]; }
+        else if (req.query.season === "Winter") { months = [12, 1, 2]; }
+        if (months) {
+          filter.$expr = { $in: [{ $month: "$releaseDate" }, months] };
         }
       } else {
-        filter.releaseDate = {
-          $gte: new Date(year, 0, 1),
-          $lte: new Date(year, 11, 31, 23, 59, 59)
-        };
+        const year = parseInt(req.query.year, 10);
+        if (req.query.season) {
+          let startMonth, endMonth, startYear = year, endYear = year;
+          if (req.query.season === "Spring") { startMonth = 2; endMonth = 4; }
+          else if (req.query.season === "Summer") { startMonth = 5; endMonth = 7; }
+          else if (req.query.season === "Fall") { startMonth = 8; endMonth = 10; }
+          else if (req.query.season === "Winter") { startMonth = 11; endMonth = 1; endYear = year + 1; }
+          if (startMonth !== undefined) {
+            filter.releaseDate = {
+              $gte: new Date(startYear, startMonth, 1),
+              $lte: new Date(endYear, endMonth + 1, 0, 23, 59, 59)
+            };
+          }
+        } else {
+          filter.releaseDate = {
+            $gte: new Date(year, 0, 1),
+            $lte: new Date(year, 11, 31, 23, 59, 59)
+          };
+        }
       }
     }
 
