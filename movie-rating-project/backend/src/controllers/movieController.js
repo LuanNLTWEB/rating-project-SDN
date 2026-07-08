@@ -19,7 +19,7 @@ const listMovies = async (req, res) => {
 
     if (req.query.genre) {
       const genreIds = Array.isArray(req.query.genre) ? req.query.genre : req.query.genre.split(",").filter(Boolean);
-      filter.genres = genreIds.length === 1 ? genreIds[0] : { $in: genreIds };
+      filter.genres = genreIds.length === 1 ? genreIds[0] : { $all: genreIds };
     }
 
     if (req.query.status) {
