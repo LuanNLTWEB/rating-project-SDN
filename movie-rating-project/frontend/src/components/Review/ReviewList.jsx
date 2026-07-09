@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../../services/api.js";
 import toast from "react-hot-toast";
 import { Star, Trash2, ChevronDown, ChevronUp, Edit2, Clock } from "lucide-react";
@@ -105,7 +106,7 @@ const ReviewItem = ({ review: initialReview, currentUser, onReviewDeleted, showM
             {review.user?.name?.[0]?.toUpperCase() || "?"}
           </div>
           <div>
-            <div style={{ fontWeight: "600", color: "var(--ink)" }}>{review.user?.name || "Unknown User"}</div>
+            <Link to={`/user/${reviewUserId}`} style={{ fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>{review.user?.name || "Unknown User"}</Link>
             <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
               {new Date(review.createdAt).toLocaleDateString()}
               {showMovie && review.movie && (

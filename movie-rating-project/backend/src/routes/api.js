@@ -69,6 +69,7 @@ const {
 const upload = require("../middlewares/upload");
 const { authenticate, requireAdmin, requireStaff } = require("../middlewares/auth");
 const { getProfile, updateProfile, changePassword, uploadAvatar, getMyAuditLogs } = require("../controllers/profileController");
+const { getPublicProfile } = require("../controllers/publicProfileController");
 
 const router = express.Router();
 
@@ -110,6 +111,8 @@ router.put("/profile/update", authenticate, updateProfile);
 router.put("/profile/change-password", authenticate, changePassword);
 router.post("/profile/upload-avatar", authenticate, uploadAvatar);
 router.get("/profile/audit-logs", authenticate, getMyAuditLogs);
+
+router.get("/users/:id/public-profile", getPublicProfile);
 
 router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);

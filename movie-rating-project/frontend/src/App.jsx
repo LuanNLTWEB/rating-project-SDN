@@ -23,6 +23,7 @@ import Favorites from "./pages/Favorites.jsx";
 import WatchlistPage from "./pages/WatchlistPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import AdminReviews from "./pages/AdminReviews.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import StaffDashboard from "./pages/StaffDashboard.jsx";
 import { Toaster } from "react-hot-toast";
@@ -73,6 +74,7 @@ const App = () => {
       <Route path="/news/:id" element={<NewsDetail />} />
       <Route path="/reviews" element={<Reviews currentUser={user} />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/user/:id" element={<UserProfile />} />
     </>
   );
 
