@@ -20,6 +20,9 @@ const Home = ({ status, currentUser }) => {
   const [genreDropdownOpen, setGenreDropdownOpen] = useState(false);
   const genreRef = useRef(null);
 
+  const [randomMovie, setRandomMovie] = useState(null);
+  const [randomLoading, setRandomLoading] = useState(false);
+
   useEffect(() => {
     const fetchGenres = async () => {
       try {
@@ -101,6 +104,20 @@ const Home = ({ status, currentUser }) => {
     setSelectedSeason("");
     setSeasonYear("");
     setPage(1);
+  };
+
+  const fetchRandomMovie = async () => {
+    setRandomLoading(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/movies/random`
+      );
+      setRandomMovie(response.data.movie);
+    } catch (error) {
+      console.error("Failed to fetch random movie:", error);
+    } finally {
+      setRandomLoading(false);
+    }
   };
 
   const genreLabel = useMemo(() => {
@@ -288,7 +305,21 @@ const Home = ({ status, currentUser }) => {
         />
 
         {/* Filter Actions */}
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <button
+            type="button"
+            className="ghost-button"
+            onClick={fetchRandomMovie}
+            disabled={randomLoading}
+            style={{
+              background: "var(--primary)",
+              color: "#fff",
+              border: "1px solid var(--primary)",
+              fontWeight: 600,
+            }}
+          >
+            {randomLoading ? "Loading..." : "🎲 Random Anime"}
+          </button>
           <button type="button" className="ghost-button" onClick={resetFilters}>
             Reset Filters
           </button>
@@ -420,6 +451,157 @@ const Home = ({ status, currentUser }) => {
           </div>
         )}
       </div>
+    {/* Random Movie Modal */}
+      {randomMovie && (
+        <div
+          onClick={() => setRandomMovie(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "1rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="admin-card"
+            style={{
+              maxWidth: "420px",
+              width: "100%",
+              padding: "1.5rem",
+              borderRadius: "16px",
+              position: "relative",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            <button
+              onClick={() => setRandomMovie(null)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "14px",
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                color: "var(--muted)",
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+
+            <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+              <h3 style={{ margin: 0, color: "var(--primary)" }}>🎲 Random Anime</h3>
+            </div>
+
+            <Link
+              to={`/movies/${randomMovie._id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={() => setRandomMovie(null)}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "2/3",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  backgroundColor: "#eae0d5",
+                  marginBottom: "1rem",
+                }}
+              >
+                {randomMovie.poster ? (
+                  <img
+                    src={randomMovie.poster.startsWith('http') ? randomMovie.poster : `${import.meta.env.VITE_API_URL.replace('/api', '')}${randomMovie.poster}`}
+                    alt={randomMovie.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#9c8c7d" }}>No Image</div>
+                )}
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    background: "rgba(0,0,0,0.6)",
+                    color: "#fff",
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                    fontSize: "0.75rem",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {randomMovie.status}
+                </span>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    left: "8px",
+                    background: "rgba(0,0,0,0.7)",
+                    color: "#fff",
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  <span style={{ color: "#f59e0b" }}>★</span>
+                  <span>{randomMovie.averageRating > 0 ? randomMovie.averageRating.toFixed(1) : "N/A"}</span>
+                </div>
+              </div>
+
+              <h4 style={{ margin: "0 0 0.5rem", fontSize: "1.1rem", textAlign: "center" }}>
+                {randomMovie.name}
+              </h4>
+
+              <div style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginBottom: "0.5rem" }}>
+                <p style={{ margin: "0.25rem 0" }}>
+                  Genres: {randomMovie.genres?.map(g => g.name).join(", ") || "None"}
+                </p>
+                <p style={{ margin: "0.25rem 0" }}>
+                  Released: {new Date(randomMovie.releaseDate).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div style={{ textAlign: "center" }}>
+                <button
+                  className="ghost-button"
+                  style={{
+                    background: "var(--primary)",
+                    color: "#fff",
+                    border: "1px solid var(--primary)",
+                    fontWeight: 600,
+                    marginRight: "0.5rem",
+                  }}
+                >
+                  View Details
+                </button>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    fetchRandomMovie();
+                  }}
+                >
+                  Roll Again
+                </button>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

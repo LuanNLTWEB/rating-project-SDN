@@ -364,6 +364,24 @@ const incrementViewCount = async (req, res) => {
   }
 };
 
+const getRandomMovie = async (req, res) => {
+  try {
+    const filter = { isActive: true };
+    const count = await Movie.countDocuments(filter);
+    if (count === 0) {
+      return res.status(404).json({ message: "No movies available" });
+    }
+    const random = Math.floor(Math.random() * count);
+    const movie = await Movie.findOne(filter)
+      .populate("genres", "name")
+      .skip(random)
+      .lean();
+    return res.status(200).json({ movie });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 const getMostPopularMovies = async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
@@ -468,4 +486,5 @@ module.exports = {
   incrementViewCount,
   getMostPopularMovies,
   getTopRatedMovies,
+  getRandomMovie,
 };

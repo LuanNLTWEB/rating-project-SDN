@@ -28,6 +28,7 @@ const {
 	incrementViewCount,
 	getMostPopularMovies,
 	getTopRatedMovies,
+	getRandomMovie,
 } = require("../controllers/movieController");
 const {
 	listPublicNews,
@@ -118,6 +119,7 @@ router.get("/movies", listMovies);
 router.get("/movies/trending", getTrendingMovies);
 router.get("/movies/popular", getMostPopularMovies);
 router.get("/movies/top-rated", getTopRatedMovies);
+router.get("/movies/random", getRandomMovie);
 router.get("/movies/:id", getMovieById);
 router.patch("/movies/:id/view", incrementViewCount);
 
