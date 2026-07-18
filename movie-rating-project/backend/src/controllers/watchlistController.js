@@ -30,7 +30,7 @@ const updateWatchlistStatus = async (req, res) => {
     const { movieId } = req.params;
     const { status } = req.body;
 
-    if (!["watching", "will_watch", "completed", "on_hold", "dropped"].includes(status)) {
+    if (!["watching", "will_watch", "completed"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
 
@@ -67,12 +67,12 @@ const listWatchlist = async (req, res) => {
   try {
     const { status } = req.query;
     const filter = { user: req.user._id };
-    if (status && ["watching", "will_watch", "completed", "on_hold", "dropped"].includes(status)) {
+    if (status && ["watching", "will_watch", "completed"].includes(status)) {
       filter.status = status;
     }
 
     const items = await Watchlist.find(filter)
-      .populate("movie", "name poster releaseDate status genres")
+      .populate("movie", "name poster releaseDate status genres averageRating")
       .sort({ updatedAt: -1 });
 
     return res.status(200).json({ items });

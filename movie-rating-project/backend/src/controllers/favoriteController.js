@@ -37,7 +37,7 @@ const removeFavorite = async (req, res) => {
 const listFavorites = async (req, res) => {
   try {
     const favorites = await Favorite.find({ user: req.user._id })
-      .populate("movie", "name poster releaseDate status genres")
+      .populate("movie", "name poster releaseDate status genres averageRating")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ favorites });

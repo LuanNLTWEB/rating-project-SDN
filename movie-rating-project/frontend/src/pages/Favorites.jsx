@@ -66,11 +66,20 @@ const Favorites = ({ currentUser }) => {
               <div key={fav._id} className="admin-card" style={{ overflow: "hidden", position: "relative" }}>
                 <Link to={`/movies/${movie._id}`} style={{ textDecoration: "none", color: "inherit" }}>
                   <div style={{ position: "relative", width: "100%", aspectRatio: "2/3", backgroundColor: "#eee", overflow: "hidden" }}>
+                    {movie.poster ? (
+                      <img
+                        src={movie.poster.startsWith("http") ? movie.poster : `${import.meta.env.VITE_API_URL.replace("/api", "")}${movie.poster}`}
+                        alt={movie.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888" }}>No Poster</div>
+                    )}
                     <div
                       style={{
                         position: "absolute",
                         top: "8px",
-                        left: "8px",
+                        right: "8px",
                         background: "rgba(0,0,0,0.7)",
                         color: "#fff",
                         padding: "3px 8px",
@@ -85,15 +94,6 @@ const Favorites = ({ currentUser }) => {
                       <span style={{ color: "#f59e0b", fontSize: "1.1rem", lineHeight: 1 }}>★</span>
                       <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
                     </div>
-                    {movie.poster ? (
-                      <img
-                        src={movie.poster.startsWith("http") ? movie.poster : `${import.meta.env.VITE_API_URL.replace("/api", "")}${movie.poster}`}
-                        alt={movie.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888" }}>No Poster</div>
-                    )}
                   </div>
                   <div style={{ padding: "12px" }}>
                     <h4 style={{ margin: "0 0 4px 0", fontSize: "0.95rem", fontWeight: "600", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{movie.name}</h4>

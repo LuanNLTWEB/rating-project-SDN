@@ -127,25 +127,6 @@ const WatchlistPage = ({ currentUser }) => {
                 <div style={{ display: "flex", gap: "12px", padding: "12px" }}>
                   <Link to={`/movies/${movie._id}`} style={{ flexShrink: 0, textDecoration: "none" }}>
                     <div style={{ position: "relative", width: "80px", aspectRatio: "2/3", borderRadius: "8px", overflow: "hidden", backgroundColor: "#eee" }}>
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "4px",
-                          left: "4px",
-                          background: "rgba(0,0,0,0.7)",
-                          color: "#fff",
-                          padding: "1px 4px",
-                          borderRadius: "4px",
-                          fontSize: "0.65rem",
-                          fontWeight: "bold",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "2px"
-                        }}
-                      >
-                        <span style={{ color: "#f59e0b", fontSize: "0.8rem", lineHeight: 1 }}>★</span>
-                        <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
-                      </div>
                       {movie.poster ? (
                         <img
                           src={movie.poster.startsWith("http") ? movie.poster : `${import.meta.env.VITE_API_URL.replace("/api", "")}${movie.poster}`}
@@ -155,6 +136,25 @@ const WatchlistPage = ({ currentUser }) => {
                       ) : (
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#888", fontSize: "0.7rem" }}>No Poster</div>
                       )}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "4px",
+                          right: "4px",
+                          background: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          fontSize: "0.7rem",
+                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px"
+                        }}
+                      >
+                        <span style={{ color: "#f59e0b", fontSize: "0.85rem", lineHeight: 1 }}>★</span>
+                        <span>{movie.averageRating > 0 ? movie.averageRating.toFixed(1) : "N/A"}</span>
+                      </div>
                     </div>
                   </Link>
                   <div style={{ flex: 1, minWidth: 0 }}>
