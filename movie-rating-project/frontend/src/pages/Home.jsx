@@ -58,7 +58,7 @@ const Home = ({ status, currentUser }) => {
       try {
         const params = {
           page,
-          limit: 8,
+          limit: 24,
           search: movieName,
           ...(selectedGenres.length > 0 ? { genre: selectedGenres.join(",") } : {}),
           season: selectedSeason,
@@ -451,7 +451,7 @@ const Home = ({ status, currentUser }) => {
           </div>
         )}
       </div>
-    {/* Random Movie Modal */}
+      {/* Random Movie Modal */}
       {randomMovie && (
         <div
           onClick={() => setRandomMovie(null)}
