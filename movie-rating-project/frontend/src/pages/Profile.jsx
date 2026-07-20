@@ -311,13 +311,10 @@ export default function Profile() {
                   {logs.map((log, index) => (
                     <div key={log._id || index} style={{ borderLeft: "3px solid var(--primary)", paddingLeft: "1rem", backgroundColor: "var(--bg-accent)", padding: "0.75rem 1rem", borderRadius: "0 8px 8px 0" }}>
                       <div style={{ fontWeight: "600", color: "var(--ink)", fontSize: "0.95rem" }}>
-                        {log.action || "Account Action"}
-                      </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: "0.25rem" }}>
-                        {log.details || "No extra details available"}
+                        {log.description || log.action || "Account Action"}
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "right", marginTop: "0.5rem" }}>
-                        {new Date(log.timestamp || log.createdAt).toLocaleString()}
+                        {new Date(log.createdAt).toLocaleString()}
                       </div>
                     </div>
                   ))}

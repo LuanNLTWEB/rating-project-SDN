@@ -1,4 +1,5 @@
 const Favorite = require("../models/Favorite");
+const logActivity = require("../utils/logActivity");
 
 const addFavorite = async (req, res) => {
   try {
@@ -15,6 +16,14 @@ const addFavorite = async (req, res) => {
     const favorite = await Favorite.create({ user: req.user._id, movie: movieId });
     await favorite.populate("movie", "name poster");
 
+    logActivity({
+      userId: req.user._id,
+      action: "favorite_add",
+      description: `Added "${favorite.movie?.name || movieId}" to favorites`,
+      details: { movieId },
+      req,
+    });
+
     return res.status(201).json({ message: "Added to favorites", favorite });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
@@ -28,6 +37,15 @@ const removeFavorite = async (req, res) => {
     if (!favorite) {
       return res.status(404).json({ message: "Favorite not found" });
     }
+
+    logActivity({
+      userId: req.user._id,
+      action: "favorite_remove",
+      description: "Removed a movie from favorites",
+      details: { movieId },
+      req,
+    });
+
     return res.status(200).json({ message: "Removed from favorites" });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });

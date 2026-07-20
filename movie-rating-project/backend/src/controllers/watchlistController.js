@@ -1,4 +1,5 @@
 const Watchlist = require("../models/Watchlist");
+const logActivity = require("../utils/logActivity");
 
 const addToWatchlist = async (req, res) => {
   try {
@@ -18,6 +19,14 @@ const addToWatchlist = async (req, res) => {
       status: status || "will_watch",
     });
     await item.populate("movie", "name poster");
+
+    logActivity({
+      userId: req.user._id,
+      action: "watchlist_add",
+      description: `Added "${item.movie?.name || movieId}" to watchlist`,
+      details: { movieId, status: item.status },
+      req,
+    });
 
     return res.status(201).json({ message: "Added to watchlist", item });
   } catch (error) {
@@ -44,6 +53,14 @@ const updateWatchlistStatus = async (req, res) => {
       return res.status(404).json({ message: "Watchlist item not found" });
     }
 
+    logActivity({
+      userId: req.user._id,
+      action: "watchlist_update",
+      description: `Updated watchlist status to "${status}"`,
+      details: { movieId, status },
+      req,
+    });
+
     return res.status(200).json({ message: "Watchlist updated", item });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });
@@ -57,6 +74,15 @@ const removeFromWatchlist = async (req, res) => {
     if (!item) {
       return res.status(404).json({ message: "Watchlist item not found" });
     }
+
+    logActivity({
+      userId: req.user._id,
+      action: "watchlist_remove",
+      description: "Removed a movie from watchlist",
+      details: { movieId },
+      req,
+    });
+
     return res.status(200).json({ message: "Removed from watchlist" });
   } catch (error) {
     return res.status(500).json({ message: "Server error", error: error.message });

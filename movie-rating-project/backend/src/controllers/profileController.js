@@ -3,9 +3,10 @@ const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const path = require("path");
-const AdminAuditLog = require("../models/AdminAuditLog");
+const UserActivityLog = require("../models/UserActivityLog");
 const bcrypt = require("bcryptjs");
 const xss = require("xss");
+const logActivity = require("../utils/logActivity");
 
 // Configure Cloudinary
 cloudinary.config({
@@ -99,6 +100,14 @@ const updateProfile = async (req, res) => {
 
       await user.save();
 
+      logActivity({
+        userId: user._id,
+        action: "profile_update",
+        description: "Updated personal information",
+        details: { name, gender, dateOfBirth, avatarChanged: !!req.file },
+        req,
+      });
+
       return res.status(200).json({
         message: "Update profile successful!",
         user: {
@@ -151,6 +160,13 @@ const changePassword = async (req, res) => {
 
     await user.save();
 
+    logActivity({
+      userId: user._id,
+      action: "password_change",
+      description: "Changed account password",
+      req,
+    });
+
     return res.status(200).json({ message: "Change password successful" });
   } catch (error) {
     return res.status(500).json({ message: "Server error while changing password" });
@@ -182,6 +198,13 @@ const uploadAvatar = async (req, res) => {
       user.avatar = avatarUrl;
       await user.save();
 
+      logActivity({
+        userId: user._id,
+        action: "avatar_upload",
+        description: "Uploaded a new avatar",
+        req,
+      });
+
       return res.status(200).json({
         message: "Upload avatar successful",
         avatar: avatarUrl
@@ -196,11 +219,29 @@ const uploadAvatar = async (req, res) => {
 // US10: Xem lịch sử hoạt động cá nhân
 const getMyAuditLogs = async (req, res) => {
   try {
-    const logs = await AdminAuditLog.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
+
+    const filter = { userId: req.user.id };
+
+    const [logs, total] = await Promise.all([
+      UserActivityLog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      UserActivityLog.countDocuments(filter),
+    ]);
 
     return res.status(200).json({
       message: "Get my audit logs successful",
-      logs: logs
+      logs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
     });
   } catch (error) {
     return res.status(500).json({ message: "Server error while getting audit logs" });

@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const { sendResetEmail } = require("../config/mailer");
 const xss = require("xss");
+const logActivity = require("../utils/logActivity");
 
 const createAccessToken = (user) =>
   jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -72,6 +73,13 @@ const register = async (req, res) => {
     const newUser = new User({ name: xss(name), email, password, gender, dateOfBirth });
     await newUser.save();
 
+    logActivity({
+      userId: newUser._id,
+      action: "register",
+      description: "Created a new account",
+      req,
+    });
+
     res.status(201).json({
       message: "Register successful",
       user: {
@@ -114,6 +122,13 @@ const login = async (req, res) => {
     user.refreshTokenHash = hashToken(refreshToken);
     user.refreshTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await user.save();
+
+    logActivity({
+      userId: user._id,
+      action: "login",
+      description: "Logged in to the system",
+      req,
+    });
 
     res.status(200).json({
       message: "Login successful",
@@ -201,6 +216,13 @@ const logout = async (req, res) => {
         refreshTokenHash: null,
         refreshTokenExpiresAt: null,
       });
+
+      logActivity({
+        userId: payload.id,
+        action: "logout",
+        description: "Logged out of the system",
+        req,
+      });
     }
 
     return res.status(200).json({ message: "Logged out" });
@@ -275,6 +297,13 @@ const resetPassword = async (req, res) => {
     user.refreshTokenHash = null;
     user.refreshTokenExpiresAt = null;
     await user.save();
+
+    logActivity({
+      userId: user._id,
+      action: "password_reset",
+      description: "Reset password via email",
+      req,
+    });
 
     res.status(200).json({ message: "Password has been reset successfully" });
   } catch (error) {

@@ -2,6 +2,7 @@ const Review = require("../models/Review");
 const Movie = require("../models/Movie");
 const Watchlist = require("../models/Watchlist");
 const xss = require("xss");
+const logActivity = require("../utils/logActivity");
 
 const mongoose = require("mongoose");
 
@@ -84,6 +85,15 @@ exports.createReview = async (req, res) => {
     });
 
     await updateMovieRating(movieId);
+
+    logActivity({
+      userId,
+      action: "review_create",
+      description: `Wrote a review for "${movie.name}"`,
+      details: { movieId, reviewId: review._id, overallRating },
+      req,
+    });
+
     res.status(201).json({ success: true, review });
   } catch (error) {
     if (error.code === 11000) {
@@ -140,6 +150,15 @@ exports.updateReview = async (req, res) => {
     await review.save();
 
     await updateMovieRating(review.movie);
+
+    logActivity({
+      userId,
+      action: "review_update",
+      description: "Updated a review",
+      details: { movieId: review.movie, reviewId: review._id },
+      req,
+    });
+
     res.status(200).json({ success: true, review });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
@@ -164,9 +183,21 @@ exports.deleteReview = async (req, res) => {
     }
 
     const movieId = review.movie;
+    const isOwner = review.user.toString() === userId.toString();
     await review.deleteOne();
 
     await updateMovieRating(movieId);
+
+    if (isOwner) {
+      logActivity({
+        userId,
+        action: "review_delete",
+        description: "Deleted own review",
+        details: { movieId },
+        req,
+      });
+    }
+
     res.status(200).json({ success: true, message: "Review deleted successfully." });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
