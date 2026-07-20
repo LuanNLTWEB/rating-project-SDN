@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
-import { Trash2, Search, ArrowUpDown, Star, TrendingUp, Calendar, Film } from "lucide-react";
+import { Trash2, Search, ArrowUpDown, Star } from "lucide-react";
 
 const SORT_OPTIONS = [
   { value: "name-asc", label: "Name A-Z" },
@@ -89,16 +89,6 @@ const Favorites = ({ currentUser }) => {
     return result;
   }, [favorites, search, sortBy, ratingFilter]);
 
-  const stats = useMemo(() => {
-    const movies = favorites.filter((f) => f.movie).map((f) => f.movie);
-    if (movies.length === 0) return { total: 0, avgRating: 0, highest: null, lowest: null };
-    const ratings = movies.filter((m) => m.averageRating > 0).map((m) => m.averageRating);
-    const avg = ratings.length > 0 ? (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1) : "0.0";
-    const highest = movies.reduce((a, b) => (a.averageRating > b.averageRating ? a : b));
-    const lowest = movies.reduce((a, b) => (a.averageRating < b.averageRating ? a : b));
-    return { total: movies.length, avgRating: avg, highest, lowest };
-  }, [favorites]);
-
   if (loading) {
     return (
       <div className="admin-shell" style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
@@ -118,49 +108,6 @@ const Favorites = ({ currentUser }) => {
 
       {favorites.length > 0 && (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-            <div className="admin-card" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Film size={20} color="#d97706" />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Total</div>
-                <div style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--ink)" }}>{stats.total}</div>
-              </div>
-            </div>
-            <div className="admin-card" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Star size={20} color="#0369a1" />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Avg Rating</div>
-                <div style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--ink)" }}>{stats.avgRating}</div>
-              </div>
-            </div>
-            <div className="admin-card" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <TrendingUp size={20} color="#16a34a" />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Highest</div>
-                <div style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "140px" }}>
-                  {stats.highest?.averageRating?.toFixed(1)} <span style={{ fontSize: "0.75rem", fontWeight: "400", color: "var(--muted)" }}>{stats.highest?.name?.slice(0, 15)}...</span>
-                </div>
-              </div>
-            </div>
-            <div className="admin-card" style={{ padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Calendar size={20} color="#dc2626" />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Lowest</div>
-                <div style={{ fontSize: "1.2rem", fontWeight: "700", color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "140px" }}>
-                  {stats.lowest?.averageRating?.toFixed(1)} <span style={{ fontSize: "0.75rem", fontWeight: "400", color: "var(--muted)" }}>{stats.lowest?.name?.slice(0, 15)}...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
             <div style={{ position: "relative", flex: "1 1 220px", maxWidth: "360px" }}>
               <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} />
