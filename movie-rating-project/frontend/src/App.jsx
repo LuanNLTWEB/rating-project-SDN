@@ -73,7 +73,7 @@ const App = () => {
       <Route path="/news" element={<NewsList />} />
       <Route path="/news/:id" element={<NewsDetail />} />
       <Route path="/reviews" element={<Reviews currentUser={user} />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={<Profile onUpdateUser={setUser} />} />
       <Route path="/user/:id" element={<UserProfile />} />
     </>
   );

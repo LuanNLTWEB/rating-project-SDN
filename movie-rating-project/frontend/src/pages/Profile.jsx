@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getProfile, updateProfile, changePassword, getMyAuditLogs } from "../services/api";
 
-export default function Profile() {
+export default function Profile({ onUpdateUser }) {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -106,7 +106,9 @@ export default function Profile() {
 
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      window.location.reload();
+      if (onUpdateUser) {
+        onUpdateUser(data.user);
+      }
 
       setUser(data.user);
       setIsEditing(false);
