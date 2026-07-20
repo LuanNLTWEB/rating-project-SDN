@@ -27,6 +27,9 @@ export default function Profile() {
   const [profileMessage, setProfileMessage] = useState({ type: "", text: "" });
   const [passwordMessage, setPasswordMessage] = useState({ type: "", text: "" });
 
+  // Validation errors
+  const [errors, setErrors] = useState({});
+
   const fetchUserProfile = async () => {
     try {
       const data = await getProfile();
@@ -64,6 +67,28 @@ export default function Profile() {
   // Xử lý lưu tổng hợp
   const handleUpdateAll = async (e) => {
     e.preventDefault();
+
+    // Validate
+    const newErrors = {};
+    if (!name.trim()) {
+      newErrors.name = "Full Name is required";
+    }
+    if (!dateOfBirth) {
+      newErrors.dateOfBirth = "Date of Birth is required";
+    } else {
+      const dob = new Date(dateOfBirth);
+      const today = new Date();
+      const age = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000));
+      if (age < 13) {
+        newErrors.dateOfBirth = "You must be at least 13 years old";
+      }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+
     try {
       const formData = new FormData();
       formData.append("name", name.trim());
@@ -124,6 +149,7 @@ export default function Profile() {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setSelectedFile(null);
+    setErrors({});
     fetchUserProfile();
   };
 
@@ -206,6 +232,7 @@ export default function Profile() {
           <div className="field">
             <label>Full Name</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={!isEditing} />
+            {errors.name && <span style={{ color: "var(--error, #e74c3c)", fontSize: "0.8rem", marginTop: "0.25rem", display: "block" }}>{errors.name}</span>}
           </div>
 
           <div className="field">
@@ -219,7 +246,8 @@ export default function Profile() {
 
           <div className="field">
             <label>Date of Birth</label>
-            <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} disabled={!isEditing} />
+            <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} disabled={!isEditing} max={new Date().toISOString().split("T")[0]} />
+            {errors.dateOfBirth && <span style={{ color: "var(--error, #e74c3c)", fontSize: "0.8rem", marginTop: "0.25rem", display: "block" }}>{errors.dateOfBirth}</span>}
           </div>
 
           {/* CHỈ SUBMIT KHI BẤM NÚT SAVE NÀY */}
@@ -240,6 +268,7 @@ export default function Profile() {
               style={{ width: "100%", margin: 0 }}
               onClick={(e) => {
                 e.preventDefault();
+                setErrors({});
                 setIsEditing(true);
               }}
             >

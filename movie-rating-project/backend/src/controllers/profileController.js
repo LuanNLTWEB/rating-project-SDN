@@ -87,6 +87,23 @@ const updateProfile = async (req, res) => {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Validate name
+      if (name !== undefined && !name.trim()) {
+        return res.status(400).json({ message: "Full Name is required" });
+      }
+
+      // Validate dateOfBirth
+      if (dateOfBirth) {
+        const dob = new Date(dateOfBirth);
+        if (isNaN(dob.getTime())) {
+          return res.status(400).json({ message: "Invalid date of birth" });
+        }
+        const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age < 13) {
+          return res.status(400).json({ message: "Must be at least 13 years old" });
+        }
+      }
+
       // Cập nhật các trường chữ nếu có thay đổi gửi lên
       if (name) user.name = xss(name.trim());
       if (gender) user.gender = gender;

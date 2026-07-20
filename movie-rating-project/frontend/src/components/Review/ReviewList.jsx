@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../services/api.js";
 import toast from "react-hot-toast";
 import { Star, Trash2, ChevronDown, ChevronUp, Edit2, Clock } from "lucide-react";
@@ -24,6 +24,7 @@ const ReactionButton = ({ emoji, count, onClick, active, label, showLabel }) => 
 
 const ReviewItem = ({ review: initialReview, currentUser, onReviewDeleted, showMovie }) => {
   const [review, setReview] = useState(initialReview);
+  const navigate = useNavigate();
   
   const reviewUserId = review.user?._id || review.user;
   const currentUserId = currentUser?._id || currentUser?.id;
@@ -106,7 +107,16 @@ const ReviewItem = ({ review: initialReview, currentUser, onReviewDeleted, showM
             {review.user?.name?.[0]?.toUpperCase() || "?"}
           </div>
           <div>
-            <Link to={`/user/${reviewUserId}`} style={{ fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>{review.user?.name || "Unknown User"}</Link>
+            <span
+              onClick={() => {
+                if (isAuthor) {
+                  toast("Don't you recognize yourself?", { icon: "\u{1F609}" });
+                } else {
+                  navigate(`/user/${reviewUserId}`);
+                }
+              }}
+              style={{ fontWeight: "600", color: "var(--ink)", textDecoration: "none", cursor: "pointer" }}
+            >{review.user?.name || "Unknown User"}</span>
             <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
               {new Date(review.createdAt).toLocaleDateString()}
               {showMovie && review.movie && (
