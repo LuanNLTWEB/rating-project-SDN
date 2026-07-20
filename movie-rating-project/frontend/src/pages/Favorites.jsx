@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Trash2, Search, ArrowUpDown, Star } from "lucide-react";
+import Pagination from "../components/Pagination";
 
 const SORT_OPTIONS = [
   { value: "name-asc", label: "Name A-Z" },
@@ -21,12 +22,15 @@ const RATING_FILTERS = [
   { value: 1, label: "1+ Stars" },
 ];
 
+const ITEMS_PER_PAGE = 8;
+
 const Favorites = ({ currentUser }) => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date-desc");
   const [ratingFilter, setRatingFilter] = useState(0);
+  const [page, setPage] = useState(1);
 
   const fetchFavorites = async () => {
     try {
@@ -88,6 +92,14 @@ const Favorites = ({ currentUser }) => {
 
     return result;
   }, [favorites, search, sortBy, ratingFilter]);
+
+  const totalPages = Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE);
+  const paginatedFavorites = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return filteredAndSorted.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredAndSorted, page]);
+
+  useEffect(() => { setPage(1); }, [search, sortBy, ratingFilter]);
 
   if (loading) {
     return (
@@ -165,8 +177,9 @@ const Favorites = ({ currentUser }) => {
           <p className="admin-muted">No favorites match your search or filter.</p>
         </div>
       ) : (
+        <>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1.5rem" }}>
-          {filteredAndSorted.map((fav) => {
+          {paginatedFavorites.map((fav) => {
             const movie = fav.movie;
             return (
               <div key={fav._id} className="admin-card" style={{ overflow: "hidden", position: "relative" }}>
@@ -219,6 +232,8 @@ const Favorites = ({ currentUser }) => {
             );
           })}
         </div>
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

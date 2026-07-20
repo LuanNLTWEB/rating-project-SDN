@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Trash2, Globe, Lock } from "lucide-react";
 import CustomSelect from "../components/CustomSelect.jsx";
+import Pagination from "../components/Pagination";
 
 const statusOptions = [
   { value: "watching", label: "Watching", color: "var(--primary)", bg: "#e0f2fe" },
@@ -17,10 +18,13 @@ const statusColors = {
   completed: { bg: "#d4edda", color: "#155724" },
 };
 
+const ITEMS_PER_PAGE = 8;
+
 const WatchlistPage = ({ currentUser }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
+  const [page, setPage] = useState(1);
 
   const fetchWatchlist = async () => {
     setLoading(true);
@@ -39,6 +43,18 @@ const WatchlistPage = ({ currentUser }) => {
   useEffect(() => {
     fetchWatchlist();
   }, [filterStatus]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter(item => item.movie);
+  }, [items]);
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return filteredItems.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredItems, page]);
+
+  useEffect(() => { setPage(1); }, [filterStatus]);
 
   const handleUpdateStatus = async (movieId, status) => {
     try {
@@ -117,8 +133,9 @@ const WatchlistPage = ({ currentUser }) => {
           </Link>
         </div>
       ) : (
+        <>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
-          {items.map(item => {
+          {paginatedItems.map(item => {
             const movie = item.movie;
             if (!movie) return null;
             const sc = statusColors[item.status] || {};
@@ -194,6 +211,8 @@ const WatchlistPage = ({ currentUser }) => {
             );
           })}
         </div>
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

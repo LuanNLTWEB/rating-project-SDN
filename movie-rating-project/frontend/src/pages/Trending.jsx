@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Pagination from "../components/Pagination";
 
 const rankColors = [
   { bg: "#FFD700", color: "#1d1a17", label: "#1" },
@@ -14,16 +15,19 @@ const sortOptions = [
   { value: "rating", label: "Top Rated" },
 ];
 
+const ITEMS_PER_PAGE = 20;
+
 const Trending = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("trending");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchTrending = async () => {
       setLoading(true);
       try {
-        const params = { limit: 20 };
+        const params = { limit: 200 };
         let url = `${import.meta.env.VITE_API_URL}/movies/trending`;
         if (sortBy === "popular") {
           url = `${import.meta.env.VITE_API_URL}/movies/popular`;
@@ -42,6 +46,14 @@ const Trending = () => {
     };
     fetchTrending();
   }, [sortBy]);
+
+  const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE);
+  const paginatedMovies = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    return movies.slice(start, start + ITEMS_PER_PAGE);
+  }, [movies, page]);
+
+  useEffect(() => { setPage(1); }, [sortBy]);
 
   const renderMeta = (movie) => {
     switch (sortBy) {
@@ -68,8 +80,8 @@ const Trending = () => {
     );
   }
 
-  const top3 = movies.slice(0, 3);
-  const rest = movies.slice(3);
+  const top3 = page === 1 ? paginatedMovies.slice(0, 3) : [];
+  const rest = page === 1 ? paginatedMovies.slice(3) : paginatedMovies;
 
   return (
     <div className="admin-shell">
@@ -206,7 +218,9 @@ const Trending = () => {
                 All Movies
               </h3>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.25rem" }}>
-                {rest.map((movie, index) => (
+                {rest.map((movie, index) => {
+                  const rankNum = page === 1 ? index + 4 : (page - 1) * ITEMS_PER_PAGE + index + 1;
+                  return (
                   <Link
                     key={movie._id}
                     to={`/movies/${movie._id}`}
@@ -234,7 +248,7 @@ const Trending = () => {
                           </div>
                         )}
                         <span style={{ position: "absolute", top: "6px", left: "6px", background: "rgba(0,0,0,0.6)", color: "#fff", width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.75rem" }}>
-                          {index + 4}
+                          {rankNum}
                         </span>
                         <div
                           style={{
@@ -267,12 +281,15 @@ const Trending = () => {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
         </>
       )}
+
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 };
