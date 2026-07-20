@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getProfile, updateProfile, changePassword, getMyAuditLogs } from "../services/api";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -18,6 +19,9 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   // Quản lý lịch sử hoạt động (Audit Logs)
   const [logs, setLogs] = useState([]);
@@ -311,17 +315,32 @@ export default function Profile() {
             <form onSubmit={handleChangePassword} className="form-grid">
               <div className="field">
                 <label>Current Password</label>
-                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                <div style={{ position: "relative" }}>
+                  <input type={showCurrentPw ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required style={{ width: "100%", paddingRight: "2.5rem" }} />
+                  <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: "4px", display: "flex" }}>
+                    {showCurrentPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="field">
                 <label>New Password</label>
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                <div style={{ position: "relative" }}>
+                  <input type={showNewPw ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required style={{ width: "100%", paddingRight: "2.5rem" }} />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: "4px", display: "flex" }}>
+                    {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="field">
                 <label>Confirm Password</label>
-                <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required />
+                <div style={{ position: "relative" }}>
+                  <input type={showConfirmPw ? "text" : "password"} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required style={{ width: "100%", paddingRight: "2.5rem" }} />
+                  <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: "4px", display: "flex" }}>
+                    {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" className="primary-button" style={{ width: "100%", margin: 0 }}>Update Password</button>
