@@ -11,6 +11,7 @@ const Home = ({ status, currentUser }) => {
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState("");
   const [seasonYear, setSeasonYear] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(1);
@@ -50,7 +51,7 @@ const Home = ({ status, currentUser }) => {
 
   useEffect(() => {
     setPage(1);
-  }, [movieName, selectedGenres, selectedSeason, seasonYear]);
+  }, [movieName, selectedGenres, selectedSeason, seasonYear, selectedStatus]);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -63,6 +64,7 @@ const Home = ({ status, currentUser }) => {
           ...(selectedGenres.length > 0 ? { genre: selectedGenres.join(",") } : {}),
           season: selectedSeason,
           ...(seasonYear ? { year: seasonYear } : {}),
+          ...(selectedStatus ? { status: selectedStatus } : {}),
         };
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/movies`,
@@ -77,7 +79,7 @@ const Home = ({ status, currentUser }) => {
       }
     };
     fetchMovies();
-  }, [movieName, selectedGenres, selectedSeason, seasonYear, page]);
+  }, [movieName, selectedGenres, selectedSeason, seasonYear, selectedStatus, page]);
 
   const yearOptions = useMemo(() => {
     const current = new Date().getFullYear();
@@ -103,6 +105,7 @@ const Home = ({ status, currentUser }) => {
     setSelectedGenres([]);
     setSelectedSeason("");
     setSeasonYear("");
+    setSelectedStatus("");
     setPage(1);
   };
 
@@ -284,15 +287,42 @@ const Home = ({ status, currentUser }) => {
               placeholder="All Years"
             />
           </div>
+
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <span style={{ fontWeight: 600, color: "var(--muted)", whiteSpace: "nowrap" }}>Status:</span>
+            {["Ongoing", "Completed", "Upcoming"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                className="ghost-button"
+                style={{
+                  background:
+                    selectedStatus === s.toLowerCase() ? "var(--primary)" : "transparent",
+                  color: selectedStatus === s.toLowerCase() ? "#fff" : "var(--ink)",
+                  border:
+                    selectedStatus === s.toLowerCase()
+                      ? "1px solid var(--primary)"
+                      : "1px solid #c9b39d",
+                }}
+                onClick={() =>
+                  setSelectedStatus(selectedStatus === s.toLowerCase() ? "" : s.toLowerCase())
+                }
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {(movieName || selectedSeason || selectedGenres.length > 0) && (
+        {(movieName || selectedSeason || selectedGenres.length > 0 || selectedStatus) && (
           <p className="admin-subtitle" style={{ marginTop: "1rem", marginBottom: 0 }}>
             {movieName && `Title: "${movieName}"`}
-            {movieName && (selectedSeason || selectedGenres.length > 0) && " | "}
+            {movieName && (selectedSeason || selectedGenres.length > 0 || selectedStatus) && " | "}
             {selectedGenres.length > 0 && `Genres: ${selectedGenres.length}`}
-            {selectedGenres.length > 0 && selectedSeason && " | "}
+            {selectedGenres.length > 0 && (selectedSeason || selectedStatus) && " | "}
             {selectedSeason && `Season: ${selectedSeason}${seasonYear ? ` ${seasonYear}` : ""}`}
+            {selectedSeason && selectedStatus && " | "}
+            {selectedStatus && `Status: ${selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}`}
           </p>
         )}
 
