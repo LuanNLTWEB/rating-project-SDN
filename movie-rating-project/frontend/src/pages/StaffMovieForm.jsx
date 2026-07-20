@@ -175,11 +175,11 @@ const StaffMovieForm = ({ currentUser }) => {
     try {
       if (isEditMode) {
         await axios.put(`${baseURL}/staff/movies/${id}`, formData, {
-          headers: { ...headers, "Content-Type": "multipart/form-data" }
+          headers: headers
         });
       } else {
         await axios.post(`${baseURL}/staff/movies`, formData, {
-          headers: { ...headers, "Content-Type": "multipart/form-data" }
+          headers: headers
         });
       }
       navigate("/staff/movies");

@@ -76,7 +76,7 @@ const updateProfile = async (req, res) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: err.message });
     } else if (err) {
-      return res.status(400).json({ message: err.message });
+      return res.status(400).json({ message: err.message || err.toString(), error: err });
     }
 
     try {
@@ -197,7 +197,7 @@ const uploadAvatar = async (req, res) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: err.message });
     } else if (err) {
-      return res.status(400).json({ message: err.message });
+      return res.status(400).json({ message: err.message || err.toString(), error: err });
     }
 
     if (!req.file) {
