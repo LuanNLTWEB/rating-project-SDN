@@ -124,10 +124,10 @@ export default function StaffNewsEditor() {
       });
 
       if (isNew) {
-        await api.post("/staff/news", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.post("/staff/news", formData);
         toast.success("Article created successfully!", { id: toastId });
       } else {
-        await api.put(`/staff/news/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+        await api.put(`/staff/news/${id}`, formData);
         toast.success("Article updated successfully!", { id: toastId });
       }
       
